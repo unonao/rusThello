@@ -1,15 +1,66 @@
+/*
+クライアント
+    cargo run "127.0.0.1" 30000 Player1
+
+*/
+
+
 #![allow(non_snake_case)]
+
+// 自作モジュール
 mod play;
 use play::*;
 
 
-/*
-    黒が先手
-*/
+// サーバ接続
+use std::net::TcpStream;
+use std::io::{BufReader, BufRead};
+use std::io::{BufWriter, Write};
+
+
+
+// コマンドライン引数
+use std::env;
+fn get_args()->(String,String,String){
+    // コマンドライン引数を取得
+    let args: Vec<String> = env::args().collect();
+    let opt_host = &args[1];
+    let opt_port = &args[2];
+    let opt_player_name = &args[3];
+    (opt_host.to_string() ,opt_port.to_string() ,opt_player_name.to_string())
+}
+
+
+
+
+fn client(host:String, port:String, name:String){
+    let addr    = format!("{}:{}", host, port);
+    let _ = println!("Connecting to {}.", addr);
+    let mut stream = TcpStream::connect(addr).expect("Connection refused");
+    let mut reader = BufReader::new(stream);
+    let mut message = String::new();
+    reader.read_line(&mut message).expect("Could not read!");
+    println!("{}",message);
+    // wait_start
+}
 
 fn main() {
-    play_me_vs_me();
+    //play_me_vs_me();
+
+/*
+    let mut opt_player_name:String =  "Anon.".to_string();
+    let mut opt_port:String        =  "3000".to_string();
+    let mut opt_host:String        =  "127.0.0.1".to_string();
+    */
+    // コマンドライン引数を変数に保存
+    let (opt_host, opt_port, opt_player_name) = get_args();
+
+    // クライアントとして接続
+    client(opt_host, opt_port, opt_player_name)
 }
+
+
+
 
 fn test_play(){
     let mut board = init_board();
@@ -30,7 +81,7 @@ fn test_play(){
 
     board = reverse_board(&board,player_color,next);
     print_board(&board);
-    
+
 }
 
 fn play_me_vs_me(){
@@ -67,7 +118,7 @@ fn play_me_vs_me(){
         board = reverse_board(&board,player_color,next);
         player_color = player_color^1;
     }
-    
+
 }
 
 
