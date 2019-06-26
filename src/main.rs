@@ -32,32 +32,51 @@ fn get_args()->(String,String,String){
 
 
 
-
-fn client(host:String, port:String, name:String){
-    let addr    = format!("{}:{}", host, port);
-    let _ = println!("Connecting to {}.", addr);
-    let mut stream = TcpStream::connect(addr).expect("Connection refused");
-    let mut reader = BufReader::new(stream);
+fn wait_start(writer:BufWriter, reader:BufReader){
+    /*
+        input : writer, reader
+        "START color opponent_name time"を受け取るまで待機
+    */
+    // スタート待ち
     let mut message = String::new();
     reader.read_line(&mut message).expect("Could not read!");
     println!("{}",message);
-    // wait_start
+}
+
+
+
+fn client(host:String, port:String, name:String){
+    /*
+        input : ホスト、ポート、プレーヤー名
+        サーバーへ接続し、OPEN nameを送信。wait_startを呼び出す
+    */
+
+
+    // サーバーへ接続
+    let addr    = format!("{}:{}", host, port);
+    println!("Connecting to {}.", addr);
+    let stream = TcpStream::connect(addr).expect("Connection refused");
+    let mut writer = BufWriter::new(&stream);
+    let mut reader = BufReader::new(&stream);
+
+    // OPEN name を送信
+    let b = format!("OPEN {}\n", name);;
+    writer.write(b.as_bytes()).expect("Write failed");
+    let _ = writer.flush();
+    println!("Send: {}.", b);
+
+    wait_start(writer, reader);
 }
 
 fn main() {
-    //play_me_vs_me();
-
-/*
-    let mut opt_player_name:String =  "Anon.".to_string();
-    let mut opt_port:String        =  "3000".to_string();
-    let mut opt_host:String        =  "127.0.0.1".to_string();
-    */
     // コマンドライン引数を変数に保存
     let (opt_host, opt_port, opt_player_name) = get_args();
 
     // クライアントとして接続
     client(opt_host, opt_port, opt_player_name)
 }
+
+
 
 
 
