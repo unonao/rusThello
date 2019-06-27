@@ -7,14 +7,13 @@
 
 #![allow(non_snake_case)]
 
-// 自作モジュール
-mod play;
-use play::*;
+extern crate rusThello;
+use rusThello::play::*;
 
 
 // サーバ接続
 use std::net::TcpStream;
-use std::io::{BufReader, BufRead};
+use std::io::{BufReader,BufRead};
 use std::io::{BufWriter, Write};
 
 
@@ -32,7 +31,7 @@ fn get_args()->(String,String,String){
 
 
 
-fn wait_start(writer:BufWriter, reader:BufReader){
+fn wait_start(writer:&mut BufWriter<&TcpStream>, reader: &mut BufReader<&TcpStream>){
     /*
         input : writer, reader
         "START color opponent_name time"を受け取るまで待機
@@ -65,7 +64,7 @@ fn client(host:String, port:String, name:String){
     let _ = writer.flush();
     println!("Send: {}.", b);
 
-    wait_start(writer, reader);
+    wait_start(&mut writer, &mut reader);
 }
 
 fn main() {
