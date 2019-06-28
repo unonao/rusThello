@@ -1,15 +1,8 @@
 /*
-    boardはu64*2
-    座標は(x:u32,y:u32)と受け取る
+    play.rs: オセロ用の基本関数を集めたファイル
 
-    use num_traits::PrimInt;
-    n.count_ones(); // ビット表現したときに現れる1の数を求める
-    n.count_zeros(); // ビットで表現したときに現れる0の数を求める
-    n.leading_zeros(); // ビットで表現したときの頭の0の数を求める
-    n.trailing_zeros(); // ビットで表現したときの末尾の0の数を求める
-    n.swap_bytes(); // byte順序を逆にする
-    n.rotate_right(4); // ラップする右シフト
-    n.rotate_left(4); // ラップする左シフト
+    boardはu64*2のbit boardで表現する
+
 */
 
 
@@ -269,81 +262,4 @@ pub fn get_first_flippable(flippable:u64)->u64{
         }
     }
     return mask
-}
-
-
-
-
-
-
-
-
-
-/*
-    boardのprint処理
-*/
-
-
-pub fn print_bit (board:&u64){
-    println!(" 12345678");
-    println!("1{:08b}", (board) >> 8*7);
-    println!("2{:08b}", (board << 8*1) >> 8*7);
-    println!("3{:08b}", (board << 8*2) >> 8*7);
-    println!("4{:08b}", (board << 8*3) >> 8*7);
-    println!("5{:08b}", (board << 8*4) >> 8*7);
-    println!("6{:08b}", (board << 8*5) >> 8*7);
-    println!("7{:08b}", (board << 8*6) >> 8*7);
-    println!("8{:08b}", (board << 8*7) >> 8*7);
-}
-
-pub fn print_unilateral (flippable:&u64){
-    let mut mask:u64 = 0x8000000000000000;
-    println!(" ABCDEFGH");
-    for n in 0..8 {
-        if (mask&flippable)!=mask {print!("{}.",n+1)} else {print!("{}1",n+1)};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else{print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
-        mask = mask >> 1;
-        if (mask&flippable)!=mask {println!(".")} else {println!("1")};
-        mask = mask >> 1;
-    }
-    println!("");
-}
-
-pub fn print_board (board:&Board){
-    let (black, white) = (board.black, board.white);
-    let blank = !(black|white);
-    let mut mask:u64 = 0x8000000000000000;
-    println!("board( Black:1, White:0)");
-    println!(" ABCDEFGH");
-    for n in 0..8 {
-        let i = 8-n;
-        if (mask&blank)==mask {print!("{}.",n+1)} else {print!("{}{:01b}",n+1,(mask&black)>>i*8-1)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-2)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-3)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-4)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-5)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-6)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>i*8-7)};
-        mask = mask >> 1;
-        if (mask&blank)==mask {println!(".")} else {println!("{:01b}",(mask&black)>>i*8-8)};
-        mask = mask >> 1;
-    }
-    println!("");
 }

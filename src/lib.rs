@@ -1,7 +1,7 @@
 extern crate nom;
 pub mod play;
 pub mod command_parser;
-
+pub mod print;
 
 // cargo test -- --nocapture
 #[cfg(test)]
@@ -29,13 +29,13 @@ mod tests {
         // let parsed = crate::command_parser::command_parse("MOVE B3\n");
         // let parsed = crate::command_parser::command_parse("ACK 1000\n");
         match parsed {
-            Ok((input, crate::command_parser::Message::Open{name})) => println!("OPEN {}",name),
-            Ok((input, crate::command_parser::Message::Start{color,name,time})) => println!("START {}:{}:{}",color, name, time),
-            Ok((input, crate::command_parser::Message::End{win_lose,n, m, reason})) => println!("END {}:{}:{}:{}",win_lose,n, m, reason),
-            Ok((input, crate::command_parser::Message::Bye{stats})) => println!("Bye {}:{}:{}:{} {}:{}:{}:{}",stats[0].participant, stats[0].score, stats[0].win, stats[0].lose, stats[1].participant, stats[1].score, stats[1].win, stats[1].lose),
-            Ok((input, crate::command_parser::Message::Pass)) => println!("Pass"),
-            Ok((input, crate::command_parser::Message::Move{x,y})) => println!("Move x:{}, y:{}",x,y),
-            Ok((input, crate::command_parser::Message::Ack{time})) => println!("Ack time:{}",time),
+            Ok((_, crate::command_parser::Message::Open{name})) => println!("OPEN {}",name),
+            Ok((_, crate::command_parser::Message::Start{color,name,time})) => println!("START {}:{}:{}",color, name, time),
+            Ok((_, crate::command_parser::Message::End{win_lose,n, m, reason})) => println!("END {}:{}:{}:{}",win_lose,n, m, reason),
+            Ok((_, crate::command_parser::Message::Bye{stats})) => println!("Bye {}:{}:{}:{} {}:{}:{}:{}",stats[0].participant, stats[0].score, stats[0].win, stats[0].lose, stats[1].participant, stats[1].score, stats[1].win, stats[1].lose),
+            Ok((_, crate::command_parser::Message::Pass)) => println!("Pass"),
+            Ok((_, crate::command_parser::Message::Move{x,y})) => println!("Move x:{}, y:{}",x,y),
+            Ok((_, crate::command_parser::Message::Ack{time})) => println!("Ack time:{}",time),
             _ => panic!("crash and burn")
         }
     }

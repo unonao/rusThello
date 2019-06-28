@@ -15,6 +15,7 @@ random
 extern crate rusThello;
 use rusThello::play::*;
 use rusThello::command_parser::*;
+use rusThello::print::*;
 
 
 // サーバ接続
@@ -24,10 +25,10 @@ use std::io::{BufWriter, Write};
 // serverからのコマンドを一行読み込んでパース
 pub fn input_command (reader: &mut BufReader<&TcpStream>) -> Message {
     let mut message = String::new();
-
     reader.read_line(&mut message).expect("Could not read!");
 
-    println!("{}",message);
+    println!("{}",message); // input 内容を出力
+
     match command_parse(message.as_str()) {
         Ok((_input, message)) => {
                 message
@@ -43,6 +44,7 @@ pub fn output_command (writer:&mut BufWriter<&TcpStream>, command:String) {
     writer.write(command.as_bytes()).expect("Write failed");
     let _ = writer.flush();
 }
+
 
 
 // コマンドライン引数
@@ -177,11 +179,7 @@ fn main() {
 
 
 
-fn print_stats(stats:Vec<Stat>){
-    for i in stats {
-        println!("participant:{} score:{}, win:{}, lose:{}", i.participant, i.score, i.win, i.lose)
-    }
-}
+
 
 
 

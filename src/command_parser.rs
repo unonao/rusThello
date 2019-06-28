@@ -1,3 +1,16 @@
+/*
+
+    command_parser.rs: プロトコルで定められたメッセージをパースする関数や、構造体・列挙型を定義するファイル
+
+    COMMAND Arg1 ... Argn\n  という形式のメッセージをやりとり
+        OPEN PLAYER_NAME
+        START WB OPPONENT_NAME TIME
+        END WL n m REASON
+        BYE stat
+        MOVE M
+        ACK TIME
+*/
+
 
 //#[macro_use]
 use nom::{
