@@ -103,8 +103,8 @@ fn move_parse(input: &str) -> IResult<&str,Message> { // Move{x:u32, y:u32}
 fn sub_move_parse(input: &str) -> IResult<&str,Message> {
         let (input,x) = take(1u8)(input)?;
         let (input,y) = take(1u8)(input)?;
-        let x:u32 = ((((x.chars().next().unwrap() as u32) - ('A' as u32)) as u32)) + 1;
-        let y:u32 = ((y.chars().next().unwrap() as u32) - ('0' as u32)) as u32;
+        let x:u32 = ((((x.chars().next().unwrap() as u32) - ('A' as u32)) as u32));
+        let y:u32 = ((y.chars().next().unwrap() as u32) - ('1' as u32)) as u32;
         return Ok((input ,Message::Move{x:x,y:y}))
 }
 

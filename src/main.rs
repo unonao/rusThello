@@ -62,7 +62,6 @@ fn get_args()->(String,String,String){
 
 
 
-
 fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
     let pmove:Move = get_next(&board, color); // 次に打つ手
     let board = flip_board(&board, color, &pmove);

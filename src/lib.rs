@@ -8,17 +8,17 @@ pub mod print;
 mod tests {
     #[test]
     fn it_works() {
-        /*
+        /**/
         println!("{}",crate::play::opposite_color(1));
         println!("{}",crate::play::opposite_color(0));
 
-        let mv = crate::play::Move::Mv{x:4,y:5};
+        let mv = crate::play::Move::Mv{x:3,y:5};
         let mask = crate::play::move_to_bit(&mv);
-        crate::play::print_unilateral(&mask);
+        crate::print::print_unilateral(&mask);
         println!("{}", crate::play::move_to_string(&mv));
         let (x,y) = crate::play::bit_to_coordinate(mask);
         println!("{},{}",x,y);
-        */
+
 
         // let parsed = crate::command_parser::command_parse("OPEN player12345\n");
         // let parsed = crate::command_parser::command_parse("START BLACK Player2 500000\n");

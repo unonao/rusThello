@@ -8,15 +8,19 @@
 
 pub const  BLACK: u32 = 0;
 pub const  WHITE: u32 = 1;
+pub struct Board { // bit board の構造体
+    pub black: u64, pub white: u64
+}
 
 pub fn opposite_color(color:u32)->u32{
+    /*
+        ビット演算でカラーをスワップする
+    */
     color ^ (1 as u32)
 }
 
 
-pub struct Board {
-    pub black: u64, pub white: u64
-}
+
 
 
 pub fn init_board() -> Board {
@@ -39,28 +43,31 @@ pub fn init_board() -> Board {
 
 pub fn coordinate_to_bit(x:u32,y:u32)->u64{
     /*
-        1~8のx,yを受け取り、座標をbitに変換
+        0~7のx,yを受け取り、座標をbitに変換
     */
     let mask:u64 = 0x8000000000000000; //左端だけが 1
-    mask >> (x+y*8-9)
+    mask >> (x+y*8)
 
 }
 pub fn bit_to_coordinate(mask:u64)->(u32, u32){
     /*
         input : u64で表した座標
-        output : 1~8の座標x,y
+        output : 0~7の座標x,y
     */
-    let lead_zeros = mask.leading_zeros()+1;
+    let lead_zeros = mask.leading_zeros();
+    (lead_zeros % 8, lead_zeros / 8)
+    /*
     let (x,y) =  if (lead_zeros % 8)==0 {
         (8, (lead_zeros / 8))
     }else{
         ((lead_zeros % 8),(lead_zeros / 8)+1)
     }   ;
     (x,y)
+    */
 }
 
 pub enum Move {
-  Mv {x:u32, y:u32},
+  Mv {x:u32, y:u32}, // x,yは0~7
   Pass,
   GiveUp
 }
@@ -72,6 +79,9 @@ pub enum Opmove{
 */
 
 pub fn move_to_string(m: &Move) -> String {
+    /*
+        Moveを受け取って、プロトコル用の座標に変換
+    */
   match m {
     Move::Pass => {
       "PASS".to_string()
@@ -80,8 +90,8 @@ pub fn move_to_string(m: &Move) -> String {
       "GIVEUP".to_string()
     }
     Move::Mv{x:i, y:j} => {
-      let ci = (i + ('A' as u32) - 1) as u8 as char;
-      let cj = (j + ('1' as u32) - 1) as u8 as char;
+      let ci = (i + ('A' as u32)) as u8 as char;
+      let cj = (j + ('1' as u32)) as u8 as char;
       ci.to_string() + cj.to_string().as_str()
     }
   }
