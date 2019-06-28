@@ -8,7 +8,7 @@
     n.leading_zeros(); // ビットで表現したときの頭の0の数を求める
     n.trailing_zeros(); // ビットで表現したときの末尾の0の数を求める
     n.swap_bytes(); // byte順序を逆にする
-    n.rotate_right(4); // ラップする右シフト 
+    n.rotate_right(4); // ラップする右シフト
     n.rotate_left(4); // ラップする左シフト
 */
 
@@ -125,7 +125,7 @@ pub fn flip_board(board:&Board, color:u32, next:&Move)->Board{
 pub fn get_next(board: &Board, color:u32) -> Move{
     let flippable = legal_flip(&board, color);
     let next:u64 = get_first_flippable(flippable); // 先頭のものを取得
-    
+
     if  next==0 {
         Move::Pass
     }else{
@@ -286,12 +286,12 @@ pub fn get_first_flippable(flippable:u64)->u64{
 
 pub fn print_bit (board:&u64){
     println!(" 12345678");
-    println!("1{:08b}", (board) >> 8*7); 
-    println!("2{:08b}", (board << 8*1) >> 8*7); 
-    println!("3{:08b}", (board << 8*2) >> 8*7); 
-    println!("4{:08b}", (board << 8*3) >> 8*7); 
-    println!("5{:08b}", (board << 8*4) >> 8*7); 
-    println!("6{:08b}", (board << 8*5) >> 8*7); 
+    println!("1{:08b}", (board) >> 8*7);
+    println!("2{:08b}", (board << 8*1) >> 8*7);
+    println!("3{:08b}", (board << 8*2) >> 8*7);
+    println!("4{:08b}", (board << 8*3) >> 8*7);
+    println!("5{:08b}", (board << 8*4) >> 8*7);
+    println!("6{:08b}", (board << 8*5) >> 8*7);
     println!("7{:08b}", (board << 8*6) >> 8*7);
     println!("8{:08b}", (board << 8*7) >> 8*7);
 }
@@ -324,7 +324,7 @@ pub fn print_board (board:&Board){
     let (black, white) = (board.black, board.white);
     let blank = !(black|white);
     let mut mask:u64 = 0x8000000000000000;
-    println!("board");
+    println!("board( Black:1, White:0)");
     println!(" ABCDEFGH");
     for n in 0..8 {
         let i = 8-n;

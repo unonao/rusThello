@@ -8,7 +8,9 @@ pub mod command_parser;
 mod tests {
     #[test]
     fn it_works() {
-        crate::play::coordinate_to_bit(7,2);
+        /*
+        println!("{}",crate::play::opposite_color(1));
+        println!("{}",crate::play::opposite_color(0));
 
         let mv = crate::play::Move::Mv{x:4,y:5};
         let mask = crate::play::move_to_bit(&mv);
@@ -16,15 +18,16 @@ mod tests {
         println!("{}", crate::play::move_to_string(&mv));
         let (x,y) = crate::play::bit_to_coordinate(mask);
         println!("{},{}",x,y);
+        */
 
         // let parsed = crate::command_parser::command_parse("OPEN player12345\n");
-        let parsed = crate::command_parser::command_parse("START BLACK Player2 500000\n");
-        // let parsed = crate::command_parser::command_parse("END Win 33 31 Over\n");
-        // let parsed = crate::command_parser::command_parse("BYE player1 100 21 22 player2 50 22 21 player2 50 22 21\n");
-        // let parsed = crate::command_parser::command_parse("MOVE PASS\n"); 
-        // let parsed = crate::command_parser::command_parse("MOVE GIVEUP\n"); 
-        // let parsed = crate::command_parser::command_parse("MOVE B3\n"); 
-        // let parsed = crate::command_parser::command_parse("ACK 1000\n"); 
+        // let parsed = crate::command_parser::command_parse("START BLACK Player2 500000\n");
+        // let parsed = crate::command_parser::command_parse("END WIN 48 16 DOUBLE_PASS\n");
+        let parsed = crate::command_parser::command_parse("BYE Player2 4 4 0 rusThello -4 0 4\n");
+        // let parsed = crate::command_parser::command_parse("MOVE PASS\n");
+        // let parsed = crate::command_parser::command_parse("MOVE GIVEUP\n");
+        // let parsed = crate::command_parser::command_parse("MOVE B3\n");
+        // let parsed = crate::command_parser::command_parse("ACK 1000\n");
         match parsed {
             Ok((input, crate::command_parser::Message::Open{name})) => println!("OPEN {}",name),
             Ok((input, crate::command_parser::Message::Start{color,name,time})) => println!("START {}:{}:{}",color, name, time),

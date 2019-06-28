@@ -2,8 +2,10 @@
 //#[macro_use]
 use nom::{
   IResult,
-  character::streaming::{alphanumeric1,alpha1,digit1},
+  character::streaming::{alphanumeric1,alpha1,digit1,not_line_ending},
+  character::complete::char,
   bytes::complete::{tag,take_until,take},
+  combinator::opt,
   sequence::{tuple}
   };
 
@@ -12,7 +14,7 @@ pub enum Message {
     Start{color:String, name:String, time:u32},
     End {win_lose:String, n:u32,  m:u32, reason:String},
     Bye{stats:Vec<Stat>},
-    Move {x:u32, y:u32}, 
+    Move {x:u32, y:u32},
     Pass,
     Giveup,
     Ack{time:u32}
@@ -20,7 +22,7 @@ pub enum Message {
 
 pub struct Stat {
     pub participant:String,
-    pub score:u32,
+    pub score:i32,
     pub win:u32, // 勝数
     pub lose:u32
 }
@@ -51,7 +53,7 @@ fn start_parse(input: &str) -> IResult<&str,Message> {
         Ok((input ,Message::Start{color: color.to_string(), name :name.to_string(), time:time_num}))
 }
 fn end_parse(input: &str) -> IResult<&str,Message> {
-        let (input, (_, win_lose, _,  n, _, m, _, reason, _)) = tuple((tag(" "), alpha1 ,tag(" "), digit1, tag(" "), digit1, tag(" "), alphanumeric1, tag("\n")))(input)?;
+        let (input, (_, win_lose, _,  n, _, m, _, reason, _)) = tuple((tag(" "), alpha1 ,tag(" "), digit1, tag(" "), digit1, tag(" "), not_line_ending, tag("\n")))(input)?;
         let n_num:u32 = n.parse().unwrap();
         let m_num:u32 = m.parse().unwrap();
         Ok((input ,Message::End{win_lose: win_lose.to_string(), n :n_num, m :m_num, reason:reason.to_string()}))
@@ -61,9 +63,9 @@ fn bye_parse(input: &str) -> IResult<&str,Message> {
         let mut input_tmp = input;
         loop {
                 let (input, _) = tag(" ")(input_tmp)?;
-                let (input, (participant, _,  score, _, win, _, lose)) = tuple((alphanumeric1 ,tag(" "), digit1, tag(" "), digit1, tag(" "), digit1))(input)?;
-
-                let score:u32 = score.parse().unwrap();
+                let (input, (participant, _,  minus, score, _, win, _, lose)) = tuple((alphanumeric1 ,tag(" "), opt(char('-')), digit1, tag(" "), digit1, tag(" "), digit1))(input)?;
+                let score:i32 = score.parse().unwrap();
+                let score:i32 = if minus.is_some() { -1 * score } else { score };
                 let win:u32 = win.parse().unwrap();
                 let lose:u32 = lose.parse().unwrap();
                 let one_stat:Stat = Stat{participant:participant.to_string(), score:score, win:win, lose:lose};
@@ -74,6 +76,7 @@ fn bye_parse(input: &str) -> IResult<&str,Message> {
         }
         Ok((input ,Message::Bye{stats:stat_vec}))
 }
+
 fn move_parse(input: &str) -> IResult<&str,Message> { // Move{x:u32, y:u32}
         let (input, (_, m,_)) = tuple((tag(" "), alphanumeric1, tag("\n")))(input)?;
         //let (_, (x, y)) = tuple((nom::character::complete::char, nom::character::complete::char))(input)?;
@@ -81,10 +84,10 @@ fn move_parse(input: &str) -> IResult<&str,Message> { // Move{x:u32, y:u32}
                 "PASS"          => return Ok((input ,Message::Pass)),
                 "GIVEUP"        => return Ok((input ,Message::Giveup)),
                 _               => sub_move_parse(m)
-                                   
+
         }
 }
-fn sub_move_parse(input: &str) -> IResult<&str,Message> { 
+fn sub_move_parse(input: &str) -> IResult<&str,Message> {
         let (input,x) = take(1u8)(input)?;
         let (input,y) = take(1u8)(input)?;
         let x:u32 = ((((x.chars().next().unwrap() as u32) - ('A' as u32)) as u32)) + 1;

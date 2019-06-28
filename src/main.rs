@@ -1,10 +1,12 @@
 /*
-クライアント
-    cargo run "127.0.0.1" 30000 rusThello
+
 server
     ./reversi-serv -p 30000 -t 500
 random
     ./reversi -H "localhost" -p 30000 -n Player2
+
+クライアント
+    cargo run "127.0.0.1" 30000 rusThello
 */
 
 
@@ -22,7 +24,7 @@ use std::io::{BufWriter, Write};
 // serverからのコマンドを一行読み込んでパース
 pub fn input_command (reader: &mut BufReader<&TcpStream>) -> Message {
     let mut message = String::new();
-    
+
     reader.read_line(&mut message).expect("Could not read!");
 
     println!("{}",message);
@@ -65,7 +67,7 @@ fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
     print_board(&board);
-    println!("{}", move_send);
+    println!("my_move {}", move_send);
 
     hist.push(pmove);
     output_command(&mut writer, move_send);
@@ -103,13 +105,13 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
     println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
     print_board(&board);
     match win_lose.as_str() {
-        "WIN" => println!("You win! ({}vs. {}) -- {}.\n", n,m,reason),
-        "LOSE" => println!("You lose! ({}vs. {}) -- {}.\n", n,m,reason),
+        "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
+        "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
         "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
         _ => println!("parse error!")
     };
-     
-     
+
+
      wait_start(&mut writer, &mut reader);
 
 }
@@ -122,7 +124,7 @@ fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<
     if color=="BLACK" {
         my_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
     }else{
-        op_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
+        op_move(&mut writer, &mut reader, board, WHITE, opponent_name, time, &mut hist_vec)
     }
 }
 
@@ -139,7 +141,7 @@ fn wait_start(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<
             start_game(&mut writer, &mut reader, color, name, time)},
         _ => println!("Invalid Command")
     }
-    
+
 }
 
 
