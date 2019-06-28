@@ -1,7 +1,10 @@
 /*
 クライアント
-    cargo run "127.0.0.1" 30000 Player1
-
+    cargo run "127.0.0.1" 30000 rusThello
+server
+    ./reversi-serv -p 30000 -t 500
+random
+    ./reversi -H "localhost" -p 30000 -n Player2
 */
 
 
@@ -9,13 +12,35 @@
 
 extern crate rusThello;
 use rusThello::play::*;
+use rusThello::command_parser::*;
 
 
 // サーバ接続
 use std::net::TcpStream;
 use std::io::{BufReader,BufRead};
 use std::io::{BufWriter, Write};
+// serverからのコマンドを一行読み込んでパース
+pub fn input_command (reader: &mut BufReader<&TcpStream>) -> Message {
+    let mut message = String::new();
+    
+    reader.read_line(&mut message).expect("Could not read!");
 
+    println!("{}",message);
+    match command_parse(message.as_str()) {
+        Ok((_input, message)) => {
+                message
+        }
+        _ => {
+                println!("input error");
+                Message::Giveup
+        }
+    }
+}
+// serverへStringを送信
+pub fn output_command (writer:&mut BufWriter<&TcpStream>, command:String) {
+    writer.write(command.as_bytes()).expect("Write failed");
+    let _ = writer.flush();
+}
 
 
 // コマンドライン引数
@@ -23,25 +48,99 @@ use std::env;
 fn get_args()->(String,String,String){
     // コマンドライン引数を取得
     let args: Vec<String> = env::args().collect();
-    let opt_host = &args[1];
-    let opt_port = &args[2];
-    let opt_player_name = &args[3];
+    let len = args.len();
+    let opt_host = if len>0 {&args[1]} else {"127.0.0.1"};
+    let opt_port = if len>1 {&args[2]} else {"30000"};
+    let opt_player_name = if len>2 {&args[3]} else {"rusThello"};
     (opt_host.to_string() ,opt_port.to_string() ,opt_player_name.to_string())
 }
 
 
 
-fn wait_start(writer:&mut BufWriter<&TcpStream>, reader: &mut BufReader<&TcpStream>){
+
+
+fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+    let pmove:Move = get_next(&board, color); // 次に打つ手
+    let board = flip_board(&board, color, &pmove);
+    let move_send = format!("MOVE {}\n", move_to_string(&pmove));
+
+    print_board(&board);
+    println!("{}", move_send);
+
+    hist.push(pmove);
+    output_command(&mut writer, move_send);
+    match input_command(&mut reader){
+        Message::Ack{time} =>
+            op_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist),
+        Message::End{win_lose,n,m,reason} =>
+            proc_end(&mut writer, &mut reader, board, color, opponent_name, &mut hist, win_lose,n,m,reason),
+        _ =>
+            println!("Invalid Command")
+    }
+}
+
+fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+    match input_command(reader){
+        Message::Move{x, y} =>{
+            let omove:Move = Move::Mv{x:x, y:y};
+            let board = flip_board(&board, opposite_color(color), &omove);
+            hist.push(omove);
+            my_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist)
+        }
+        Message::Pass =>{
+            hist.push(Move::Pass);
+            my_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist)
+        }
+        Message::End{win_lose,n,m,reason} =>
+            proc_end(&mut writer, &mut reader, board, color, opponent_name, &mut hist, win_lose,n,m,reason),
+        _ => {
+            println!("Invalid Command")
+        }
+    }
+}
+
+fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, hist:&mut Vec<Move>, win_lose:String, n:u32,  m:u32, reason:String){
+    println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
+    print_board(&board);
+    match win_lose.as_str() {
+        "WIN" => println!("You win! ({}vs. {}) -- {}.\n", n,m,reason),
+        "LOSE" => println!("You lose! ({}vs. {}) -- {}.\n", n,m,reason),
+        "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
+        _ => println!("parse error!")
+    };
+     
+     
+     wait_start(&mut writer, &mut reader);
+
+}
+
+
+// ゲームスタート
+fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>,color:String, opponent_name:String, time:u32){
+    let board = init_board() ;
+    let mut hist_vec: Vec<Move> = Vec::new();
+    if color=="BLACK" {
+        my_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
+    }else{
+        op_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
+    }
+}
+
+
+// スタート待ち
+fn wait_start(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>){
     /*
         input : writer, reader
         "START color opponent_name time"を受け取るまで待機
     */
-    // スタート待ち
-    let mut message = String::new();
-    reader.read_line(&mut message).expect("Could not read!");
-    println!("{}",message);
+    match input_command(&mut reader) {
+        Message::Bye{stats} => print_stats(stats),
+        Message::Start{color, name, time} => {
+            start_game(&mut writer, &mut reader, color, name, time)},
+        _ => println!("Invalid Command")
+    }
+    
 }
-
 
 
 fn client(host:String, port:String, name:String){
@@ -59,10 +158,8 @@ fn client(host:String, port:String, name:String){
     let mut reader = BufReader::new(&stream);
 
     // OPEN name を送信
-    let b = format!("OPEN {}\n", name);;
-    writer.write(b.as_bytes()).expect("Write failed");
-    let _ = writer.flush();
-    println!("Send: {}.", b);
+    let open_and_name = format!("OPEN {}\n", name);
+    output_command(&mut writer, open_and_name);
 
     wait_start(&mut writer, &mut reader);
 }
@@ -78,8 +175,17 @@ fn main() {
 
 
 
+fn print_stats(stats:Vec<Stat>){
+    for i in stats {
+        println!("participant:{} score:{}, win:{}, lose:{}", i.participant, i.score, i.win, i.lose)
+    }
+}
 
 
+
+
+
+/*
 fn test_play(){
     let mut board = init_board();
     let player_color = BLACK;
@@ -89,15 +195,15 @@ fn test_play(){
     println!("flippable");
     print_unilateral(&flippable);
 
-    let next:u64 = get_next(flippable);
+    let next:u64 = get_first_flippable(flippable);
     println!("next");
     print_unilateral(&next);
 
-    let reverse:u64 = reverse_stones(&board, player_color, next);
-    println!("reverse");
-    print_unilateral(&reverse);
+    let flippable:u64 = flippable_stones(&board, player_color, next);
+    println!("flippable");
+    print_unilateral(&flippable);
 
-    board = reverse_board(&board,player_color,next);
+    board = flip_board(&board, player_color, flippable);
     print_board(&board);
 
 }
@@ -133,24 +239,12 @@ fn play_me_vs_me(){
             println!("not flippable!");
             continue
             }
-        board = reverse_board(&board,player_color,next);
+        board = flip_board(&board,player_color,next);
         player_color = player_color^1;
     }
 
 }
 
 
-fn get_next(flippable:u64)->u64{
-    let mut mask:u64 = 0x8000000000000000;
-    if flippable == 0 {
-        return 0;
-    }else{
-        for _i in 0..64 {
-            if (mask&flippable)==mask {
-                return mask
-            }
-            mask = mask >> 1;
-        }
-    }
-    return mask
-}
+
+*/

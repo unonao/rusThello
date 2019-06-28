@@ -16,6 +16,11 @@
 pub const  BLACK: u32 = 0;
 pub const  WHITE: u32 = 1;
 
+pub fn opposite_color(color:u32)->u32{
+    color ^ (1 as u32)
+}
+
+
 pub struct Board {
     pub black: u64, pub white: u64
 }
@@ -44,7 +49,8 @@ pub fn coordinate_to_bit(x:u32,y:u32)->u64{
         1~8のx,yを受け取り、座標をbitに変換
     */
     let mask:u64 = 0x8000000000000000; //左端だけが 1
-    mask >> ((x-1)+(y-1)*8)
+    mask >> (x+y*8-9)
+
 }
 pub fn bit_to_coordinate(mask:u64)->(u32, u32){
     /*
@@ -52,10 +58,83 @@ pub fn bit_to_coordinate(mask:u64)->(u32, u32){
         output : 1~8の座標x,y
     */
     let lead_zeros = mask.leading_zeros()+1;
-    let x:u32 =  (lead_zeros / 8).into();
-    let y:u32 =  (lead_zeros - (x*8)).into();
-    (x+1,y+1)
+    let (x,y) =  if (lead_zeros % 8)==0 {
+        (8, (lead_zeros / 8))
+    }else{
+        ((lead_zeros % 8),(lead_zeros / 8)+1)
+    }   ;
+    (x,y)
 }
+
+pub enum Move {
+  Mv {x:u32, y:u32},
+  Pass,
+  GiveUp
+}
+/*
+pub enum Opmove{
+    PMove(Move),
+    OMove(Move)
+}
+*/
+
+pub fn move_to_string(m: &Move) -> String {
+  match m {
+    Move::Pass => {
+      "PASS".to_string()
+    }
+    Move::GiveUp => {
+      "GIVEUP".to_string()
+    }
+    Move::Mv{x:i, y:j} => {
+      let ci = (i + ('A' as u32) - 1) as u8 as char;
+      let cj = (j + ('1' as u32) - 1) as u8 as char;
+      ci.to_string() + cj.to_string().as_str()
+    }
+  }
+}
+pub fn move_to_bit(m: &Move) -> u64 {
+  match m {
+    Move::Pass => {
+      0
+    }
+    Move::GiveUp => {
+      0
+    }
+    Move::Mv{x:i, y:j} => {
+      coordinate_to_bit(*i,*j)
+    }
+  }
+}
+
+pub fn flip_board(board:&Board, color:u32, next:&Move)->Board{
+    let next:u64 = move_to_bit(next);
+    if next >0{
+        let rev = flippable_stones(&board, color, next);
+        if color==BLACK{
+            return Board{black:(board.black^(rev^next)), white:(board.white^rev)}
+        }else{
+            return Board{black:(board.black^rev), white:(board.white^(rev^next))}
+        }
+    }else{
+        return Board{black:board.black, white:board.white}
+    }
+
+}
+// 次の手を取得
+pub fn get_next(board: &Board, color:u32) -> Move{
+    let flippable = legal_flip(&board, color);
+    let next:u64 = get_first_flippable(flippable); // 先頭のものを取得
+    
+    if  next==0 {
+        Move::Pass
+    }else{
+        let (x,y) = bit_to_coordinate(next);
+        Move::Mv{x:x, y:y}
+    }
+
+}
+
 
 
 pub fn legal_flip(board:&Board, color:u32)->u64{
@@ -114,7 +193,7 @@ fn sub_legal_r(player:u64, masked:u64, blank:u64, num:u64)->u64{
 
 
 
-pub fn reverse_stones(board:&Board, color:u32, next:u64)->u64{
+pub fn flippable_stones(board:&Board, color:u32, next:u64)->u64{
     /*
         input : ボード, 白と黒どちらの手番か, 着手箇所
         output : ひっくり返る場所
@@ -125,17 +204,17 @@ pub fn reverse_stones(board:&Board, color:u32, next:u64)->u64{
     let blank_h = !(player | opponent & 0x7e7e7e7e7e7e7e7e);
     let blank_v = !(player | opponent & 0x00ffffffffffff00);
     let blank_a = !(player | opponent & 0x007e7e7e7e7e7e00);
-    let mut rev = sub_reverse_l(player, blank_h, next, 1); // 左
-    rev |= sub_reverse_l(player, blank_v, next, 8); // 上
-    rev |= sub_reverse_l(player, blank_a, next, 7); // 右上
-    rev |= sub_reverse_l(player, blank_a, next, 9); // 左上
-    rev |= sub_reverse_r(player, blank_h, next, 1); // 右
-    rev |= sub_reverse_r(player, blank_v, next, 8); // 下
-    rev |= sub_reverse_r(player, blank_a, next, 7); // 左下
-    rev |= sub_reverse_r(player, blank_a, next, 9); // 右下
+    let mut rev = sub_flippable_l(player, blank_h, next, 1); // 左
+    rev |= sub_flippable_l(player, blank_v, next, 8); // 上
+    rev |= sub_flippable_l(player, blank_a, next, 7); // 右上
+    rev |= sub_flippable_l(player, blank_a, next, 9); // 左上
+    rev |= sub_flippable_r(player, blank_h, next, 1); // 右
+    rev |= sub_flippable_r(player, blank_v, next, 8); // 下
+    rev |= sub_flippable_r(player, blank_a, next, 7); // 左下
+    rev |= sub_flippable_r(player, blank_a, next, 9); // 右下
     rev
 }
-fn sub_reverse_l(player:u64, masked:u64, next:u64, num:u32)->u64{
+fn sub_flippable_l(player:u64, masked:u64, next:u64, num:u32)->u64{
     let mut rev = 0;
     let mut tmp = !(player | masked) & (next<<num);
     if tmp>0 {
@@ -152,7 +231,7 @@ fn sub_reverse_l(player:u64, masked:u64, next:u64, num:u32)->u64{
     }
     return rev;
 }
-fn sub_reverse_r(player:u64, masked:u64, next:u64, num:u32)->u64{
+fn sub_flippable_r(player:u64, masked:u64, next:u64, num:u32)->u64{
     let mut rev = 0;
     let mut tmp = !(player | masked) & (next>>num);
     if tmp>0 {
@@ -172,17 +251,37 @@ fn sub_reverse_r(player:u64, masked:u64, next:u64, num:u32)->u64{
 
 
 
-pub fn reverse_board(board:&Board, color:u32, next:u64)->Board{
-    let rev = reverse_stones(board, color, next);
-    if color==BLACK{
-        return Board{black:(board.black^(rev^next)), white:(board.white^rev)}
+
+
+
+
+// 最初の着手可能場所を取得
+pub fn get_first_flippable(flippable:u64)->u64{
+    let mut mask:u64 = 0x8000000000000000;
+    if flippable == 0 {
+        return 0;
     }else{
-        return Board{black:(board.black^rev), white:(board.white^(rev^next))}
+        for _i in 0..64 {
+            if (mask&flippable)==mask {
+                return mask
+            }
+            mask = mask >> 1;
+        }
     }
+    return mask
 }
 
 
 
+
+
+
+
+
+
+/*
+    boardのprint処理
+*/
 
 
 pub fn print_bit (board:&u64){
@@ -199,7 +298,7 @@ pub fn print_bit (board:&u64){
 
 pub fn print_unilateral (flippable:&u64){
     let mut mask:u64 = 0x8000000000000000;
-    println!(" 12345678");
+    println!(" ABCDEFGH");
     for n in 0..8 {
         if (mask&flippable)!=mask {print!("{}.",n+1)} else {print!("{}1",n+1)};
         mask = mask >> 1;
@@ -215,7 +314,7 @@ pub fn print_unilateral (flippable:&u64){
         mask = mask >> 1;
         if (mask&flippable)!=mask {print!(".")} else {print!("1")};
         mask = mask >> 1;
-        if (mask&flippable)!=mask {println!(".")} else {print!("1")};
+        if (mask&flippable)!=mask {println!(".")} else {println!("1")};
         mask = mask >> 1;
     }
     println!("");
@@ -226,7 +325,7 @@ pub fn print_board (board:&Board){
     let blank = !(black|white);
     let mut mask:u64 = 0x8000000000000000;
     println!("board");
-    println!(" 12345678");
+    println!(" ABCDEFGH");
     for n in 0..8 {
         let i = 8-n;
         if (mask&blank)==mask {print!("{}.",n+1)} else {print!("{}{:01b}",n+1,(mask&black)>>i*8-1)};
