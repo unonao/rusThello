@@ -16,7 +16,7 @@ extern crate rusThello;
 use rusThello::play::*;
 use rusThello::command_parser::*;
 use rusThello::print::*;
-
+use rusThello::color::*;
 
 // サーバ接続
 use std::net::TcpStream;
@@ -63,8 +63,8 @@ fn get_args()->(String,String,String){
 
 
 fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
-    let pmove:Move = get_next(&board, color); // 次に打つ手
-    let board = flip_board(&board, color, &pmove);
+    let pmove:Move = board.get_next(color); // 次に打つ手
+    let board = board.flip_board(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
     print_board(&board);
@@ -86,7 +86,7 @@ fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     match input_command(reader){
         Message::Move{x, y} =>{
             let omove:Move = Move::Mv{x:x, y:y};
-            let board = flip_board(&board, opposite_color(color), &omove);
+            let board = board.flip_board(opposite_color(color), &omove);
             hist.push(omove);
             my_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist)
         }
@@ -120,7 +120,7 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
 
 // ゲームスタート
 fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>,color:String, opponent_name:String, time:u32){
-    let board = init_board() ;
+    let board = Board::init() ;
     let mut hist_vec: Vec<Move> = Vec::new();
     if color=="BLACK" {
         my_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
@@ -186,29 +186,29 @@ fn main() {
 
 /*
 fn test_play(){
-    let mut board = init_board();
+    let mut board = Board::init();
     let player_color = BLACK;
     print_board(&board);
 
-    let flippable:u64 = legal_flip(&board, player_color);
+    let flippable:u64 = board.legal_flip(player_color);
     println!("flippable");
     print_unilateral(&flippable);
 
-    let next:u64 = get_first_flippable(flippable);
+    let next:u64 = get_first_legal(flippable);
     println!("next");
     print_unilateral(&next);
 
-    let flippable:u64 = flippable_stones(&board, player_color, next);
+    let flippable:u64 = board.flippable_stones(player_color, next);
     println!("flippable");
     print_unilateral(&flippable);
 
-    board = flip_board(&board, player_color, flippable);
+    board = board.flip_board(player_color, flippable);
     print_board(&board);
 
 }
 
 fn play_me_vs_me(){
-    let mut board = init_board();
+    let mut board = Board::init();
     let mut player_color = BLACK;
     loop {
         print_board(&board);
@@ -229,7 +229,7 @@ fn play_me_vs_me(){
             (n, m)
         };
         if n>8 {break}
-        let flippable:u64 = legal_flip(&board, player_color);
+        let flippable:u64 = board.legal_flip(player_color);
         if flippable == 0 {
             println!("end game!");
         }
@@ -238,7 +238,7 @@ fn play_me_vs_me(){
             println!("not flippable!");
             continue
             }
-        board = flip_board(&board,player_color,next);
+        board = board.flip_board(player_color,next);
         player_color = player_color^1;
     }
 

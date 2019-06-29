@@ -74,7 +74,7 @@ pub fn print_board (board:&Board){
 
     let blank = !(black|white);
     let mut mask:u64 = 0x8000000000000000;
-    println!(" Board ( 1:Black {}, 0:White {})",black_num, white_num);
+    println!(" Board ( 1:Black {}({}), 0:White {}({}))",black_num,black, white_num,white);
     println!(" ABCDEFGH");
     for n in 0..8 {
         let i = 8-n;

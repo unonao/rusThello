@@ -2,13 +2,32 @@ extern crate nom;
 pub mod play;
 pub mod command_parser;
 pub mod print;
+pub mod think;
+pub mod color;
 
 // cargo test -- --nocapture
 #[cfg(test)]
 mod tests {
     #[test]
     fn it_works() {
-        /**/
+        /*
+        Board ( 1:Black 35(9187071716383739772), 0:White 28(9259672357325811842))
+            ABCDEFGH
+            101111111
+            201111111
+            300001001
+            400001101
+            500000101
+            600010111
+            701001111
+            80111110.
+        */
+        println!("is_finished {}", crate::play::Board{black:9187071716383739772,white:9259672357325811842}.is_finished());        println!("is_finished {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_finished());
+        println!("is_win {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_win(crate::color::BLACK));
+
+        /*
+
+
         println!("{}",crate::play::opposite_color(1));
         println!("{}",crate::play::opposite_color(0));
 
@@ -18,6 +37,7 @@ mod tests {
         println!("{}", crate::play::move_to_string(&mv));
         let (x,y) = crate::play::bit_to_coordinate(mask);
         println!("{},{}",x,y);
+
 
 
         // let parsed = crate::command_parser::command_parse("OPEN player12345\n");
@@ -38,5 +58,6 @@ mod tests {
             Ok((_, crate::command_parser::Message::Ack{time})) => println!("Ack time:{}",time),
             _ => panic!("crash and burn")
         }
+        */
     }
 }
