@@ -1,5 +1,5 @@
 /*
-    color.rs: 色に関するファイル
+    color.rs: 黒や白などの、石の色に関するファイル 
 */
 
 pub const  BLACK: u32 = 0;
