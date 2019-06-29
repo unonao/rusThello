@@ -5,6 +5,10 @@
 
 */
 
+// 時間計測
+use std::time::{Duration, Instant};
+
+
 use crate::think::*;
 use crate::color::*;
 use crate::solver::*;
@@ -134,7 +138,7 @@ impl Board{
             true
         }
     }
-    pub fn is_win(&self, color:u32)->bool{
+    pub fn is_win(&self, my_color:u32)->bool{
         /*
          勝利判定
          前提: 終了判定が済んだboardに対して行う
@@ -143,13 +147,13 @@ impl Board{
         let black_num = black.count_ones();
         let white_num = white.count_ones();
         if black_num > white_num {
-            if color==BLACK {
+            if my_color==BLACK {
                 true
             }else{
                 false
             }
         }else if white_num > black_num {
-            if color==WHITE {
+            if my_color==WHITE {
                 true
             }else{
                 false
@@ -193,7 +197,16 @@ impl Board{
                 Move::Mv{x:x, y:y}
             }
         }else{
-            self.solve(color, count)
+            let start = Instant::now();
+            let next:u64 = self.solve(color, count);
+            let end = start.elapsed();
+            println!("count:{}  {}.{:03}秒経過しました。", count, end.as_secs(), end.subsec_nanos() / 1_000_000);
+            if  next==0 {
+                Move::Pass
+            }else{
+                let (x,y) = bit_to_coordinate(next);
+                Move::Mv{x:x, y:y}
+            }
         }
     }
 

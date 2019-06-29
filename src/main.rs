@@ -12,6 +12,8 @@ random
 
 #![allow(non_snake_case)]
 
+
+
 extern crate rusThello;
 use rusThello::play::*;
 use rusThello::command_parser::*;
@@ -28,7 +30,7 @@ pub fn input_command (reader: &mut BufReader<&TcpStream>) -> Message {
     let mut message = String::new();
     reader.read_line(&mut message).expect("Could not read!");
 
-    println!("{}",message); // input 内容を出力
+    // println!("{}",message); // input 内容を出力
 
     match command_parse(message.as_str()) {
         Ok((_input, message)) => {
@@ -68,8 +70,8 @@ fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     let board = board.flip_board(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
-    print_board(&board);
-    println!("my_move {}", move_send);
+    // print_board(&board);
+    // println!("my_move {}", move_send);
     let count = match pmove {
         Move::Pass => count,
         _ => count-1
@@ -110,6 +112,7 @@ fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
 fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, hist:&mut Vec<Move>, win_lose:String, n:u32,  m:u32, reason:String){
     println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
     print_board(&board);
+    println!("{}",board.is_win(color));
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
