@@ -3,8 +3,8 @@
     think.rs: 思考ルーチン用ファイル
 
 */
-use crate::play::*;
-use crate::color::*;
+//use crate::play::*;
+//use crate::color::*;
 
 pub fn get_first_legal(legal:u64)->u64{
     // 最初の着手可能場所を取得(単純な思考ルーチン)

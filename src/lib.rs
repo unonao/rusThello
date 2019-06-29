@@ -4,12 +4,19 @@ pub mod command_parser;
 pub mod print;
 pub mod think;
 pub mod color;
+pub mod solver;
 
 // cargo test -- --nocapture
 #[cfg(test)]
 mod tests {
     #[test]
     fn it_works() {
+        let mut vec : Vec<crate::solver::NextAndFlippable> = Vec::new();
+        vec.push(crate::solver::NextAndFlippable{next:1,f_num:100});
+        vec.push(crate::solver::NextAndFlippable{next:4,f_num:10});
+        vec.push(crate::solver::NextAndFlippable{next:2,f_num:10});
+        vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num));
+        println!("{}:{}, {}:{}, {}:{}", vec[0].next, vec[0].f_num,vec[1].next, vec[1].f_num,vec[2].next, vec[2].f_num)
         /*
         Board ( 1:Black 35(9187071716383739772), 0:White 28(9259672357325811842))
             ABCDEFGH
@@ -22,12 +29,12 @@ mod tests {
             701001111
             80111110.
         */
-        println!("is_finished {}", crate::play::Board{black:9187071716383739772,white:9259672357325811842}.is_finished());        println!("is_finished {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_finished());
-        println!("is_win {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_win(crate::color::BLACK));
+
 
         /*
 
-
+        println!("is_finished {}", crate::play::Board{black:9187071716383739772,white:9259672357325811842}.is_finished());        println!("is_finished {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_finished());
+        println!("is_win {}", crate::play::Board{black:9187071716383477116,white:9259672357326074499}.is_win(crate::color::BLACK));
         println!("{}",crate::play::opposite_color(1));
         println!("{}",crate::play::opposite_color(0));
 

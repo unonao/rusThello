@@ -7,7 +7,7 @@
 
 use crate::think::*;
 use crate::color::*;
-
+use crate::solver::*;
 
 
 pub enum Move {
@@ -92,7 +92,8 @@ pub fn bit_to_move(mask:u64) -> Move {
 
 
 
-pub struct Board { // bit board の構造体
+pub struct Board {
+    // bit board の構造体
     pub black: u64, pub white: u64
 }
 impl Board{
@@ -127,8 +128,7 @@ impl Board{
 
     pub fn is_finished(&self)->bool{
         // 終了判定
-        let (black, white) = (self.black, self.white);
-        if (self.is_flippable(BLACK)||self.is_flippable(WHITE)){
+        if self.is_flippable(BLACK)||self.is_flippable(WHITE) {
             false
         }else{
             true
@@ -142,14 +142,14 @@ impl Board{
         let (black, white) = (self.black, self.white);
         let black_num = black.count_ones();
         let white_num = white.count_ones();
-        if (black_num > white_num){
-            if(color==BLACK){
+        if black_num > white_num {
+            if color==BLACK {
                 true
             }else{
                 false
             }
-        }else if (white_num > black_num){
-            if(color==WHITE){
+        }else if white_num > black_num {
+            if color==WHITE {
                 true
             }else{
                 false
@@ -177,20 +177,23 @@ impl Board{
         }
     }
 
-    pub fn get_next(&self, color:u32) -> Move{
+    pub fn get_next(&self, color:u32, count:u32) -> Move{
         /*
             次の手を取得
             思考ルーチンによって変更する必要あり
         */
         let legals = self.legal_flip(color);
+        if count > SOLVE_COUNT {
+            let next:u64 = get_first_legal(legals); // 先頭のものを取得
 
-        let next:u64 = get_first_legal(legals); // 先頭のものを取得
-
-        if  next==0 {
-            Move::Pass
+            if  next==0 {
+                Move::Pass
+            }else{
+                let (x,y) = bit_to_coordinate(next);
+                Move::Mv{x:x, y:y}
+            }
         }else{
-            let (x,y) = bit_to_coordinate(next);
-            Move::Mv{x:x, y:y}
+            self.solve(color, count)
         }
     }
 

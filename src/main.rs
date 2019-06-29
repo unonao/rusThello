@@ -17,6 +17,7 @@ use rusThello::play::*;
 use rusThello::command_parser::*;
 use rusThello::print::*;
 use rusThello::color::*;
+use rusThello::solver::*;
 
 // サーバ接続
 use std::net::TcpStream;
@@ -62,19 +63,23 @@ fn get_args()->(String,String,String){
 
 
 
-fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
-    let pmove:Move = board.get_next(color); // 次に打つ手
+fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:u32, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+    let pmove:Move = board.get_next(color, count); // 次に打つ手
     let board = board.flip_board(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
     print_board(&board);
     println!("my_move {}", move_send);
+    let count = match pmove {
+        Move::Pass => count,
+        _ => count-1
+    };
 
     hist.push(pmove);
     output_command(&mut writer, move_send);
     match input_command(&mut reader){
         Message::Ack{time} =>
-            op_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist),
+            op_move(&mut writer, &mut reader, board, count, color, opponent_name, time, &mut hist),
         Message::End{win_lose,n,m,reason} =>
             proc_end(&mut writer, &mut reader, board, color, opponent_name, &mut hist, win_lose,n,m,reason),
         _ =>
@@ -82,17 +87,17 @@ fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     }
 }
 
-fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:u32, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
     match input_command(reader){
         Message::Move{x, y} =>{
             let omove:Move = Move::Mv{x:x, y:y};
             let board = board.flip_board(opposite_color(color), &omove);
             hist.push(omove);
-            my_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist)
+            my_move(&mut writer, &mut reader, board, count-1, color, opponent_name, time, &mut hist)
         }
         Message::Pass =>{
             hist.push(Move::Pass);
-            my_move(&mut writer, &mut reader, board, color, opponent_name, time, &mut hist)
+            my_move(&mut writer, &mut reader, board, count, color, opponent_name, time, &mut hist)
         }
         Message::End{win_lose,n,m,reason} =>
             proc_end(&mut writer, &mut reader, board, color, opponent_name, &mut hist, win_lose,n,m,reason),
@@ -119,13 +124,13 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
 
 
 // ゲームスタート
-fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>,color:String, opponent_name:String, time:u32){
+fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, color:String, opponent_name:String, time:u32){
     let board = Board::init() ;
     let mut hist_vec: Vec<Move> = Vec::new();
     if color=="BLACK" {
-        my_move(&mut writer, &mut reader, board, BLACK, opponent_name, time, &mut hist_vec)
+        my_move(&mut writer, &mut reader, board, 60, BLACK, opponent_name, time, &mut hist_vec)
     }else{
-        op_move(&mut writer, &mut reader, board, WHITE, opponent_name, time, &mut hist_vec)
+        op_move(&mut writer, &mut reader, board, 60, WHITE, opponent_name, time, &mut hist_vec)
     }
 }
 
