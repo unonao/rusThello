@@ -25,7 +25,7 @@ pub fn print_bit (board:&u64){
     /*
         単純に0と1のbit列をを8つに区切って出力
     */
-    println!(" 12345678");
+    println!(" ABCDEFGH");
     println!("1{:08b}", (board) >> 8*7);
     println!("2{:08b}", (board << 8*1) >> 8*7);
     println!("3{:08b}", (board << 8*2) >> 8*7);

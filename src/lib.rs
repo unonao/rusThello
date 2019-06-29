@@ -11,13 +11,17 @@ pub mod solver;
 mod tests {
     #[test]
     fn it_works() {
+        let x :u64 = 0x0101010101010100;
+        crate::print::print_bit(&x);
+        println!("{}", x.leading_zeros());
+        /*
         let mut vec : Vec<crate::solver::NextAndFlippable> = Vec::new();
         vec.push(crate::solver::NextAndFlippable{next:1,f_num:100});
         vec.push(crate::solver::NextAndFlippable{next:4,f_num:10});
         vec.push(crate::solver::NextAndFlippable{next:2,f_num:10});
         vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num));
         println!("{}:{}, {}:{}, {}:{}", vec[0].next, vec[0].f_num,vec[1].next, vec[1].f_num,vec[2].next, vec[2].f_num)
-        /*
+
         Board ( 1:Black 35(9187071716383739772), 0:White 28(9259672357325811842))
             ABCDEFGH
             101111111

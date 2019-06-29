@@ -72,8 +72,8 @@ fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     let board = board.flip_board_by_move(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
-    // print_board(&board);
-    // println!("my_move {}", move_send);
+    //print_board(&board);
+    //println!("my_move {}", move_send);
     let count = match pmove {
         Move::Pass => count,
         _ => count-1

@@ -12,7 +12,7 @@ use std::time::{Instant};
 use crate::think::*;
 use crate::color::*;
 use crate::solver::*;
-
+use crate::print::*;
 
 pub enum Move {
   Mv {x:i32, y:i32}, // x,yは0~7
@@ -169,6 +169,7 @@ impl Board{
             output: flipしたあとのboard
         */
         let next:u64 = move_to_bit(next);
+        //print_bit(&next);
         if next >0{
             let rev = self.flippable_stones(color, next);
             if color==BLACK{
@@ -269,6 +270,129 @@ impl Board{
         rev |= sub_flippable_r(player, blank_a, next, 7); // 左下
         rev |= sub_flippable_r(player, blank_a, next, 9); // 右下
         rev
+    }
+
+
+/**/
+    pub fn fast_flippable_stones(&self, color:i32, next:u64)->u64 {
+        /*
+            flippable_stonesよりも高速に反転位置を求めるメソッド(未完)
+        */
+        println!("next");
+        print_bit(&next);
+
+        let (player, opponent) = if color==BLACK { (self.black, self.white) } else {(self.white, self.black)};
+        let (x,y) = bit_to_coordinate(next);
+        let mut omask = opponent;
+
+
+
+        let mask:u64 = 0x0080808080808080 >> x;
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0 {((!outflank + 1) << 1) & mask} else{0};
+/**/
+        println!("1");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+
+
+
+        let mask = 0x0101010101010100 << (7-x);
+        let outflank = ( 0x0000000000000001 << (((!omask)&mask).trailing_zeros()) ) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        let mut ret = flipped;
+/**/
+        println!("2");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+
+        omask &= 0x7e7e7e7e7e7e7e7e;
+        let mask:u64 = 0x7f00000000000000 >> y*8;
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
+        /*
+        println!("3");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+        */
+        let mask = 0x00000000000000fe << (7-y)*8;
+        let outflank = mask & ((omask | !mask) + 1) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        ret |= flipped;
+
+        /*println!("4");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+*/
+        let mask:u64 = 0x0102040810204000 >> (x+y)%8;
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
+
+
+        println!("5");
+        /*
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        */
+        println!("flipped");
+        print_bit(&flipped);
+
+        let mask = 0x0002040810204080 << 7-(x+y)%8;
+        let outflank = mask & ((omask | !mask) + 1) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        ret |= flipped;
+        /**/println!("6");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+        let mask:u64 = 0x0040201008040201 >> (x-y).abs();
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
+        /**/println!("7");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+        let mask = 0x8040201008040200 <<  if (x-y)>0{9-x+y}else{(x-y)};
+        let outflank = mask & ((omask | !mask) + 1) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        ret |= flipped;
+        /**/println!("8");
+        println!("mask");
+        print_bit(&mask);
+        println!("outflank");
+        print_bit(&outflank);
+        println!("flipped");
+        print_bit(&flipped);
+
+        return ret;
     }
 
 }
