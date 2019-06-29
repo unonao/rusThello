@@ -7,6 +7,8 @@ random
 
 クライアント
     cargo run "127.0.0.1" 30000 rusThello
+    cargo run --release "127.0.0.1" 30000 rusThello
+
 */
 
 
@@ -65,9 +67,9 @@ fn get_args()->(String,String,String){
 
 
 
-fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:u32, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:i32, color:i32, opponent_name:String, time:i32, mut hist:&mut Vec<Move>){
     let pmove:Move = board.get_next(color, count); // 次に打つ手
-    let board = board.flip_board(color, &pmove);
+    let board = board.flip_board_by_move(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
     // print_board(&board);
@@ -89,11 +91,11 @@ fn my_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     }
 }
 
-fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:u32, color:u32, opponent_name:String, time:u32, mut hist:&mut Vec<Move>){
+fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, count:i32, color:i32, opponent_name:String, time:i32, mut hist:&mut Vec<Move>){
     match input_command(reader){
         Message::Move{x, y} =>{
             let omove:Move = Move::Mv{x:x, y:y};
-            let board = board.flip_board(opposite_color(color), &omove);
+            let board = board.flip_board_by_move(opposite_color(color), &omove);
             hist.push(omove);
             my_move(&mut writer, &mut reader, board, count-1, color, opponent_name, time, &mut hist)
         }
@@ -109,17 +111,19 @@ fn op_move(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&Tc
     }
 }
 
-fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:u32, opponent_name:String, hist:&mut Vec<Move>, win_lose:String, n:u32,  m:u32, reason:String){
+fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, board:Board, color:i32, opponent_name:String, hist:&mut Vec<Move>, win_lose:String, n:i32,  m:i32, reason:String){
+    /*
     println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
     print_board(&board);
     println!("{}",board.is_win(color));
+
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
         "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
         _ => println!("parse error!")
     };
-
+    */
 
      wait_start(&mut writer, &mut reader);
 
@@ -127,7 +131,7 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
 
 
 // ゲームスタート
-fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, color:String, opponent_name:String, time:u32){
+fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, color:String, opponent_name:String, time:i32){
     let board = Board::init() ;
     let mut hist_vec: Vec<Move> = Vec::new();
     if color=="BLACK" {
@@ -232,8 +236,8 @@ fn play_me_vs_me(){
         };
         let (n, m) = {
             let mut ws = s.split_whitespace(); // 空白区切りの単語に分解する
-            let n: u32 = ws.next().unwrap().parse().unwrap(); // イテレータから値を取り出して整数に
-            let m: u32 = ws.next().unwrap().parse().unwrap();
+            let n: i32 = ws.next().unwrap().parse().unwrap(); // イテレータから値を取り出して整数に
+            let m: i32 = ws.next().unwrap().parse().unwrap();
             (n, m)
         };
         if n>8 {break}

@@ -6,7 +6,7 @@
 */
 
 // 時間計測
-use std::time::{Duration, Instant};
+use std::time::{Instant};
 
 
 use crate::think::*;
@@ -15,7 +15,7 @@ use crate::solver::*;
 
 
 pub enum Move {
-  Mv {x:u32, y:u32}, // x,yは0~7
+  Mv {x:i32, y:i32}, // x,yは0~7
   Pass,
   GiveUp
 }
@@ -25,7 +25,7 @@ pub enum Opmove{
     OMove(Move)
 }
 */
-pub fn coordinate_to_bit(x:u32,y:u32)->u64{
+pub fn coordinate_to_bit(x:i32,y:i32)->u64{
     /*
         0~7のx,yを受け取り、座標をbitに変換
     */
@@ -33,12 +33,12 @@ pub fn coordinate_to_bit(x:u32,y:u32)->u64{
     mask >> (x+y*8)
 
 }
-pub fn bit_to_coordinate(mask:u64)->(u32, u32){
+pub fn bit_to_coordinate(mask:u64)->(i32, i32){
     /*
         input : u64で表した座標
         output : 0~7の座標x,y
     */
-    let lead_zeros = mask.leading_zeros();
+    let lead_zeros = mask.leading_zeros() as i32;
     (lead_zeros % 8, lead_zeros / 8)
 }
 
@@ -56,8 +56,8 @@ pub fn move_to_string(m: &Move) -> String {
       "GIVEUP".to_string()
     }
     Move::Mv{x:i, y:j} => {
-      let ci = (i + ('A' as u32)) as u8 as char;
-      let cj = (j + ('1' as u32)) as u8 as char;
+      let ci = (i + ('A' as i32)) as u8 as char;
+      let cj = (j + ('1' as i32)) as u8 as char;
       ci.to_string() + cj.to_string().as_str()
     }
   }
@@ -121,7 +121,7 @@ impl Board{
         Board{black:0x0000000810000000, white:0x0000001008000000}
     }
 
-    pub fn is_flippable(&self, color:u32)->bool{
+    pub fn is_flippable(&self, color:i32)->bool{
         let legal = self.legal_flip(color);
         if legal>0 {
             true
@@ -138,7 +138,7 @@ impl Board{
             true
         }
     }
-    pub fn is_win(&self, my_color:u32)->bool{
+    pub fn is_win(&self, my_color:i32)->bool{
         /*
          勝利判定
          前提: 終了判定が済んだboardに対して行う
@@ -163,7 +163,7 @@ impl Board{
         }
     }
 
-    pub fn flip_board(&self, color:u32, next:&Move)->Board{
+    pub fn flip_board_by_move(&self, color:i32, next:&Move)->Board{
         /*
             input: board, 打ち手の色, 次の手
             output: flipしたあとのboard
@@ -180,8 +180,23 @@ impl Board{
             return Board::new(self.black,self.white)
         }
     }
-
-    pub fn get_next(&self, color:u32, count:u32) -> Move{
+    pub fn flip_board(&self, color:i32, next:u64)->Board{
+        /*
+            input: board, 打ち手の色, 次の手
+            output: flipしたあとのboard
+        */
+        if next >0{
+            let rev = self.flippable_stones(color, next);
+            if color==BLACK{
+                return Board::new(self.black^(rev^next), self.white^rev)
+            }else{
+                return Board::new(self.black^rev, self.white^(rev^next))
+            }
+        }else{
+            return Board::new(self.black,self.white)
+        }
+    }
+    pub fn get_next(&self, color:i32, count:i32) -> Move{
         /*
             次の手を取得
             思考ルーチンによって変更する必要あり
@@ -200,7 +215,9 @@ impl Board{
             let start = Instant::now();
             let next:u64 = self.solve(color, count);
             let end = start.elapsed();
-            println!("count:{}  {}.{:03}秒経過しました。", count, end.as_secs(), end.subsec_nanos() / 1_000_000);
+            if count==SOLVE_COUNT{
+                println!("count:{}  {}.{:03}秒経過しました。", count, end.as_secs(), end.subsec_nanos() / 1_000_000);
+            }
             if  next==0 {
                 Move::Pass
             }else{
@@ -210,7 +227,7 @@ impl Board{
         }
     }
 
-    pub fn legal_flip(&self, color:u32)->u64{
+    pub fn legal_flip(&self, color:i32)->u64{
         /*
             ボードと白と黒どちらの手番かを受け取って、
             着手可能な場所をbitで返す関数
@@ -232,7 +249,7 @@ impl Board{
         legal
     }
 
-    pub fn flippable_stones(&self, color:u32, next:u64)->u64{
+    pub fn flippable_stones(&self, color:i32, next:u64)->u64{
         /*
             input : ボード, 白と黒どちらの手番か, 着手箇所
             output : ひっくり返る場所
@@ -282,7 +299,7 @@ fn sub_legal_r(player:u64, masked:u64, blank:u64, num:u64)->u64{
 }
 
 
-fn sub_flippable_l(player:u64, masked:u64, next:u64, num:u32)->u64{
+fn sub_flippable_l(player:u64, masked:u64, next:u64, num:i32)->u64{
     let mut rev = 0;
     let mut tmp = !(player | masked) & (next<<num);
     if tmp>0 {
@@ -299,7 +316,7 @@ fn sub_flippable_l(player:u64, masked:u64, next:u64, num:u32)->u64{
     }
     return rev;
 }
-fn sub_flippable_r(player:u64, masked:u64, next:u64, num:u32)->u64{
+fn sub_flippable_r(player:u64, masked:u64, next:u64, num:i32)->u64{
     let mut rev = 0;
     let mut tmp = !(player | masked) & (next>>num);
     if tmp>0 {
