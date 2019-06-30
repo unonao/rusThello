@@ -6,6 +6,11 @@ https://doc.rust-jp.rs/book/second-edition/ch08-03-hash-maps.html
 
 ### SIMD命令を使う
 (使えるコンピュータなら)
+Linuxなら
+```
+cat /proc/cpuinfo
+```
+で確認
 https://doc.rust-lang.org/1.27.2/std/arch/index.html
 参考: https://qiita.com/termoshtt/items/a1d3af42bc01c88273c8
 
@@ -80,16 +85,13 @@ Board構造体のメソッドに変更した関数のうちいくつかは、if�
 内容は、flippable_stonesとほぼ同じである。
 
 `--release`オプションをつければ、高速に計算できる。
-実際に使う場合は21手読み前後まで可能。(50回試してworstが56.308秒)
+実際に使う場合は21手読み前後まで可能。(50回試してworstが14.315秒)
 ```
-count:21  10.041秒経過しました。
-count:21  0.780秒経過しました。
-count:21  0.010秒経過しました。
-count:21  3.321秒経過しました。
-count:21  0.001秒経過しました。
-count:21  56.308秒経過しました。
 count:21  0.000秒経過しました。
-count:21  0.000秒経過しました。
+count:21  3.704秒経過しました。
+count:21  0.449秒経過しました。
+count:21  0.024秒経過しました。
+count:21  14.315秒経過しました。
 ```
 
 #### 最終1手最適化
