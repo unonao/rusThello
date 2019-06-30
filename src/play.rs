@@ -122,8 +122,8 @@ impl Board{
     }
 
     pub fn is_flippable(&self, color:i32)->bool{
-        let legal = self.legal_flip(color);
-        if legal>0 {
+        let mobility = self.mobility_ps(color);
+        if mobility>0 {
             true
         }else{
             false
@@ -169,7 +169,7 @@ impl Board{
             output: flipしたあとのboard
         */
         let next:u64 = move_to_bit(next);
-        //print_bit(&next);
+        //print_unilateral(&next);
         if next >0{
             let rev = self.flippable_stones(color, next);
             if color==BLACK{
@@ -202,9 +202,9 @@ impl Board{
             次の手を取得
             思考ルーチンによって変更する必要あり
         */
-        let legals = self.legal_flip(color);
+        let mobilitys = self.mobility_ps(color);
         if count > SOLVE_COUNT {
-            let next:u64 = get_first_legal(legals); // 先頭のものを取得
+            let next:u64 = get_first_mobility(mobilitys); // 先頭のものを取得
 
             if  next==0 {
                 Move::Pass
@@ -228,27 +228,96 @@ impl Board{
         }
     }
 
-    pub fn legal_flip(&self, color:i32)->u64{
+    pub fn mobility_ps(&self, color:i32)->u64{
         /*
             ボードと白と黒どちらの手番かを受け取って、
-            着手可能な場所をbitで返す関数
+            着手可能な場所をbitで返す関数(高速)
         */
         let (player, opponent) = if color==BLACK {(self.black, self.white)}
                                             else {(self.white, self.black)};
         let blank = !(player|opponent);
-        let horizontal = opponent & 0x7e7e7e7e7e7e7e7e;
-        let vertical = opponent & 0x00FFFFFFFFFFFF00;
-        let all_side = opponent & 0x007e7e7e7e7e7e00;
-        let mut legal = sub_legal_l(player, horizontal, blank, 1); // 左
-        legal |= sub_legal_l(player, vertical, blank, 8); // 上
-        legal |= sub_legal_l(player, all_side, blank, 7); // 右上
-        legal |= sub_legal_l(player, all_side, blank, 9); // 左上
-        legal |= sub_legal_r(player, horizontal, blank, 1); // 右
-        legal |= sub_legal_r(player, vertical, blank, 8); // 下
-        legal |= sub_legal_r(player, all_side, blank, 7); // 左下
-        legal |= sub_legal_r(player, all_side, blank, 9); // 右下
-        legal
+        let mo = opponent & 0x7e7e7e7e7e7e7e7e;
+
+        //右
+        let ps = player << 1;
+        let mut mob = (mo+ps) & blank & !ps;
+
+        // 左
+        let mut t = player >> 1 & mo;
+        t |= t >> 1 & mo;
+        t |= t >> 1 & mo;
+        t |= t >> 1 & mo;
+        t |= t >> 1 & mo;
+        t |= t >> 1 & mo;
+        mob |= t >> 1  & blank;
+
+        // 上下
+        let mo = opponent & 0x00ffffffffffff00;
+
+        // 下
+        let mut t = player << 8 & mo;
+        t |= t << 8 & mo;
+        t |= t << 8 & mo;
+        t |= t << 8 & mo;
+        t |= t << 8 & mo;
+        t |= t << 8 & mo;
+        mob |= t << 8 & blank;
+
+        // 上
+        let mut t = player >> 8 & mo;
+        t |= t >> 8 & mo;
+        t |= t >> 8 & mo;
+        t |= t >> 8 & mo;
+        t |= t >> 8 & mo;
+        t |= t >> 8 & mo;
+        mob |= t >> 8 & blank;
+
+        // 斜め
+
+        let mo = opponent & 0x007e7e7e7e7e7e00;
+
+        // 右下
+        let mut t = player << 9 & mo;
+        t |= t << 9 & mo;
+        t |= t << 9 & mo;
+        t |= t << 9 & mo;
+        t |= t << 9 & mo;
+        t |= t << 9 & mo;
+        mob |= t << 9 & blank;
+
+        // 左上
+        let mut t = player >> 9 & mo;
+        t |= t >> 9 & mo;
+        t |= t >> 9 & mo;
+        t |= t >> 9 & mo;
+        t |= t >> 9 & mo;
+        t |= t >> 9 & mo;
+        mob |= t >> 9 & blank;
+
+
+        // 左下
+        let mut t = player << 7 & mo;
+        t |= t << 7 & mo;
+        t |= t << 7 & mo;
+        t |= t << 7 & mo;
+        t |= t << 7 & mo;
+        t |= t << 7 & mo;
+        mob |= t << 7 & blank;
+
+        // 右上
+        let mut t = player >> 7 & mo;
+        t |= t >> 7 & mo;
+        t |= t >> 7 & mo;
+        t |= t >> 7 & mo;
+        t |= t >> 7 & mo;
+        t |= t >> 7 & mo;
+        mob |= t >> 7 & blank;
+
+        mob
+
     }
+
+
 
     pub fn flippable_stones(&self, color:i32, next:u64)->u64{
         /*
@@ -278,150 +347,133 @@ impl Board{
         /*
             flippable_stonesよりも高速に反転位置を求めるメソッド(未完)
         */
-        println!("next");
-        print_bit(&next);
+        print_board(self);
+        print_unilateral_rev(&(0x0000000000000001<< next.leading_zeros()));
 
         let (player, opponent) = if color==BLACK { (self.black, self.white) } else {(self.white, self.black)};
-        let (x,y) = bit_to_coordinate(next);
+
         let mut omask = opponent;
 
+        let pos = next.leading_zeros();
+        println!("pos:{}",pos);
 
-
-        let mask:u64 = 0x0080808080808080 >> x;
+        // 上下
+        let mask:u64 = 0x0080808080808080 >> (63 - pos);
         let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
         let mut flipped  = if outflank > 0 {((!outflank + 1) << 1) & mask} else{0};
-/**/
-        println!("1");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
-
-
-
-        let mask = 0x0101010101010100 << (7-x);
+        let mask = 0x0101010101010100 << pos;
         let outflank = ( 0x0000000000000001 << (((!omask)&mask).trailing_zeros()) ) & player;
         let tmp = if outflank!=0 {1} else {0};
         flipped |= (outflank - tmp) & mask;
         let mut ret = flipped;
-/**/
-        println!("2");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
 
         omask &= 0x7e7e7e7e7e7e7e7e;
-        let mask:u64 = 0x7f00000000000000 >> y*8;
+
+        // 左右
+        let mask:u64 = 0x7f00000000000000 >> (63 - pos);
         let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
         let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
-        /*
-        println!("3");
+
+        let mask = 0x00000000000000fe <<  pos;
+        let outflank = mask & ((omask | !mask) + 1) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        ret |= flipped;
         println!("mask");
-        print_bit(&mask);
+        print_unilateral_rev(&0x00000000000000fe);
+        print_unilateral_rev(&mask);
         println!("outflank");
-        print_bit(&outflank);
+        print_unilateral_rev(&(mask & ((omask | !mask) + 1)));
+        print_unilateral_rev(&outflank);
         println!("flipped");
-        print_bit(&flipped);
-        */
-        let mask = 0x00000000000000fe << (7-y)*8;
+        print_unilateral_rev(&flipped);
+        println!("ret");
+        print_unilateral_rev(&ret);
+        // 斜め
+        let mask:u64 = 0x0102040810204000 >> (63 - pos);
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
+
+        let mask = 0x0002040810204080 <<  pos;
+        let outflank = mask & ((omask | !mask) + 1) & player;
+        let tmp = if outflank!=0 {1} else {0};
+        flipped |= (outflank - tmp) & mask;
+        ret |= flipped;
+        println!("mask");
+        print_unilateral_rev(&mask);
+        println!("outflank");
+        print_unilateral_rev(&outflank);
+        println!("flipped");
+        print_unilateral_rev(&flipped);
+        println!("ret");
+        print_unilateral_rev(&ret);
+        let mask:u64 = 0x0040201008040201 >> (63 - pos);
+        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
+        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
+        let mask = 0x8040201008040200 <<   pos;
         let outflank = mask & ((omask | !mask) + 1) & player;
         let tmp = if outflank!=0 {1} else {0};
         flipped |= (outflank - tmp) & mask;
         ret |= flipped;
 
-        /*println!("4");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
-*/
-        let mask:u64 = 0x0102040810204000 >> (x+y)%8;
-        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
-        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
 
-
-        println!("5");
-        /*
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        */
-        println!("flipped");
-        print_bit(&flipped);
-
-        let mask = 0x0002040810204080 << 7-(x+y)%8;
-        let outflank = mask & ((omask | !mask) + 1) & player;
-        let tmp = if outflank!=0 {1} else {0};
-        flipped |= (outflank - tmp) & mask;
-        ret |= flipped;
-        /**/println!("6");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
-        let mask:u64 = 0x0040201008040201 >> (x-y).abs();
-        let outflank = ( 0x8000000000000000 >> (((!omask)&mask).leading_zeros()) ) & player;
-        let mut flipped  = if outflank > 0{((!outflank + 1) << 1) & mask}else{0};
-        /**/println!("7");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
-        let mask = 0x8040201008040200 <<  if (x-y)>0{9-x+y}else{(x-y)};
-        let outflank = mask & ((omask | !mask) + 1) & player;
-        let tmp = if outflank!=0 {1} else {0};
-        flipped |= (outflank - tmp) & mask;
-        ret |= flipped;
-        /**/println!("8");
-        println!("mask");
-        print_bit(&mask);
-        println!("outflank");
-        print_bit(&outflank);
-        println!("flipped");
-        print_bit(&flipped);
-
-        return ret;
+        let ret = 0x0000000000000001<< ret.leading_zeros();
+        println!("ret");
+        print_unilateral(&ret);
+        return ret ;
     }
 
+    /*
+    pub fn old_mobility_ps(&self, color:i32)->u64{
+        /*
+            (旧 遅い)
+            ボードと白と黒どちらの手番かを受け取って、
+            着手可能な場所をbitで返す関数
+        */
+        let (player, opponent) = if color==BLACK {(self.black, self.white)}
+                                            else {(self.white, self.black)};
+        let blank = !(player|opponent);
+        let horizontal = opponent & 0x7e7e7e7e7e7e7e7e;
+        let vertical = opponent & 0x00FFFFFFFFFFFF00;
+        let all_side = opponent & 0x007e7e7e7e7e7e00;
+        let mut mobility = sub_mobility_l(player, horizontal, blank, 1); // 左
+        mobility |= sub_mobility_l(player, vertical, blank, 8); // 上
+        mobility |= sub_mobility_l(player, all_side, blank, 7); // 右上
+        mobility |= sub_mobility_l(player, all_side, blank, 9); // 左上
+        mobility |= sub_mobility_r(player, horizontal, blank, 1); // 右
+        mobility |= sub_mobility_r(player, vertical, blank, 8); // 下
+        mobility |= sub_mobility_r(player, all_side, blank, 7); // 左下
+        mobility |= sub_mobility_r(player, all_side, blank, 9); // 右下
+        mobility
+    }
+    */
 }
 
 
-
-fn sub_legal_l(player:u64, masked:u64, blank:u64, num:u64)->u64{
-    // legal_flip() 用
+/*
+fn sub_mobility_l(player:u64, masked:u64, blank:u64, num:u64)->u64{
+    // mobility_ps() 用
     let mut tmp = masked & (player << num);
     tmp |= masked & (tmp << num);
     tmp |= masked & (tmp << num);
     tmp |= masked & (tmp << num);
     tmp |= masked & (tmp << num);
     tmp |= masked & (tmp << num); // bitが立っているのは相手の碁が連続しているところ
-    let legal = blank & (tmp << num);
-    legal
+    let mobility = blank & (tmp << num);
+    mobility
 }
-fn sub_legal_r(player:u64, masked:u64, blank:u64, num:u64)->u64{
-    // legal_flip() 用
+fn sub_mobility_r(player:u64, masked:u64, blank:u64, num:u64)->u64{
+    // mobility_ps() 用
     let mut tmp = masked & (player >> num);
     tmp |= masked & (tmp >> num);
     tmp |= masked & (tmp >> num);
     tmp |= masked & (tmp >> num);
     tmp |= masked & (tmp >> num);
     tmp |= masked & (tmp >> num); // bitが立っているのは相手の碁が連続しているところ
-    let legal = blank & (tmp >> num);
-    legal
+    let mobility = blank & (tmp >> num);
+    mobility
 }
-
+*/
 
 fn sub_flippable_l(player:u64, masked:u64, next:u64, num:i32)->u64{
     let mut rev = 0;

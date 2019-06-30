@@ -202,11 +202,11 @@ fn test_play(){
     let player_color = BLACK;
     print_board(&board);
 
-    let flippable:u64 = board.legal_flip(player_color);
+    let flippable:u64 = board.mobility_ps(player_color);
     println!("flippable");
     print_unilateral(&flippable);
 
-    let next:u64 = get_first_legal(flippable);
+    let next:u64 = get_first_mobility(flippable);
     println!("next");
     print_unilateral(&next);
 
@@ -241,7 +241,7 @@ fn play_me_vs_me(){
             (n, m)
         };
         if n>8 {break}
-        let flippable:u64 = board.legal_flip(player_color);
+        let flippable:u64 = board.mobility_ps(player_color);
         if flippable == 0 {
             println!("end game!");
         }

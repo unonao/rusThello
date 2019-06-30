@@ -23,16 +23,16 @@ impl Board{
             読み切りをして、次の手を返す
             速さ優先探索: 相手が次打てる手が少ないものから探索
         */
-        let legals = self.legal_flip(my_color);
-        if legals==0{ // passのとき
+        let mobilitys = self.mobility_ps(my_color);
+        if mobilitys==0{ // passのとき
             return 0
         }else{
             let mut next_vec: Vec<NextAndFlippable> = Vec::new();
             let mut mask:u64 = 0x8000000000000000;
             while mask>0 {
-                if (mask&legals)>0{
+                if (mask&mobilitys)>0{
                     let next_board = self.flip_board(my_color, mask);
-                    let op_flippable_num = next_board.legal_flip(opposite_color(my_color)).count_ones() as i32;
+                    let op_flippable_num = next_board.mobility_ps(opposite_color(my_color)).count_ones() as i32;
                     next_vec.push(NextAndFlippable{next:mask, board:next_board, f_num: op_flippable_num});
                 }
                 mask = mask>>1;
@@ -58,9 +58,9 @@ impl Board{
         }
 
 
-        let legals = self.legal_flip(turn_color);
+        let mobilitys = self.mobility_ps(turn_color);
 
-        if legals==0{ // passのとき
+        if mobilitys==0{ // passのとき
             if self.is_finished(){
                 return self.is_win(my_color)
             }else{
@@ -71,9 +71,9 @@ impl Board{
             let mut mask:u64 = 0x8000000000000000;
             let mut next_vec: Vec<NextAndFlippable> = Vec::new();
             while mask>0 {
-                if (mask&legals)>0{
+                if (mask&mobilitys)>0{
                     let next_board = self.flip_board(turn_color, mask);
-                    let op_flippable_num = next_board.legal_flip(turn_color).count_ones() as i32;
+                    let op_flippable_num = next_board.mobility_ps(turn_color).count_ones() as i32;
                     next_vec.push(NextAndFlippable{next:mask, board:next_board, f_num: op_flippable_num});
                 }
                 mask = mask>>1;
@@ -86,7 +86,7 @@ impl Board{
                 }
 
                 if count==2{ // 最終1手(相手)をその場で処理
-                    let next = next_vec[0].board.legal_flip(opposite_color(turn_color));
+                    let next = next_vec[0].board.mobility_ps(opposite_color(turn_color));
                     let final_board = next_vec[0].board.flip_board(opposite_color(turn_color), next);
                     return final_board.is_win(my_color)
                 }else{
@@ -99,7 +99,7 @@ impl Board{
                 return false
             }else{ // 相手の手に関しては、すべての手に関して勝利する必要あり
                 if count==2{ // 最終1手(相手)をその場で処理
-                    let next = next_vec[0].board.legal_flip(opposite_color(turn_color));
+                    let next = next_vec[0].board.mobility_ps(opposite_color(turn_color));
                     let final_board = next_vec[0].board.flip_board(opposite_color(turn_color), next);
                     return final_board.is_win(my_color)
                 }else{

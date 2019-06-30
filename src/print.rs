@@ -21,20 +21,8 @@ pub fn print_stats(stats:Vec<Stat>){
 
 
 
-pub fn print_bit (board:&u64){
-    /*
-        単純に0と1のbit列をを8つに区切って出力
-    */
-    println!(" ABCDEFGH");
-    println!("1{:08b}", (board) >> 8*7);
-    println!("2{:08b}", (board << 8*1) >> 8*7);
-    println!("3{:08b}", (board << 8*2) >> 8*7);
-    println!("4{:08b}", (board << 8*3) >> 8*7);
-    println!("5{:08b}", (board << 8*4) >> 8*7);
-    println!("6{:08b}", (board << 8*5) >> 8*7);
-    println!("7{:08b}", (board << 8*6) >> 8*7);
-    println!("8{:08b}", (board << 8*7) >> 8*7);
-}
+
+
 
 pub fn print_unilateral (flippable:&u64){
     /*
@@ -94,6 +82,72 @@ pub fn print_board (board:&Board){
         mask = mask >> 1;
         if (mask&blank)==mask {println!(".")} else {println!("{:01b}",(mask&black)>>i*8-8)};
         mask = mask >> 1;
+    }
+    println!("");
+}
+
+
+
+
+
+
+pub fn print_unilateral_rev (flippable:&u64){
+    /*
+        白と黒の片側ボード or 反転可能位置 or 着手位置 or 反転する石の位置 などを出力
+    */
+    let mut mask:u64 = 0x0000000000000001;
+    println!(" 01234567");
+    for n in 0..8 {
+        if (mask&flippable)!=mask {print!("{}.",n)} else {print!("{}1",n)};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else{print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {print!(".")} else {print!("1")};
+        mask = mask << 1;
+        if (mask&flippable)!=mask {println!(".")} else {println!("1")};
+        mask = mask << 1;
+    }
+    println!("");
+}
+
+pub fn print_board_rev (board:&Board){
+    /*
+        ボード状況を出力
+        黒や白の石の合計数も出力
+    */
+    let (black, white) = (board.black, board.white);
+    let black_num = black.count_ones();
+    let white_num = white.count_ones();
+
+    let blank = !(black|white);
+    let mut mask:u64 = 0x0000000000000001;
+    println!(" Board ( 1:Black {}({}), 0:White {}({}))",black_num,black, white_num,white);
+    println!(" 01234567");
+    for n in 0..8 {
+        if (mask&blank)==mask {print!("{}.",n)} else {print!("{}{:01b}",n,(mask&black)>>n*8)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+1)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+2)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+3)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+4)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+5)};
+        mask = mask << 1;
+        if (mask&blank)==mask {print!(".")} else {print!("{:01b}",(mask&black)>>n*8+6)};
+        mask = mask << 1;
+        if (mask&blank)==mask {println!(".")} else {println!("{:01b}",(mask&black)>>n*8+7)};
+        mask = mask << 1;
     }
     println!("");
 }

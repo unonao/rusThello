@@ -11,8 +11,8 @@ pub mod solver;
 mod tests {
     #[test]
     fn it_works() {
-        let x :u64 = 0x0101010101010100;
-        crate::print::print_bit(&x);
+        let x :u64 = 0x0080808080808080;
+        crate::print::print_unilateral(&x);
         println!("{}", x.leading_zeros());
         /*
         let mut vec : Vec<crate::solver::NextAndFlippable> = Vec::new();
