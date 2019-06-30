@@ -3,6 +3,15 @@
 ## Todo
 ### ソルバーにハッシュの導入
 https://doc.rust-jp.rs/book/second-edition/ch08-03-hash-maps.html
+3次元配列hash_mask[2][8][256(8bit)]の作成
+1つ目: 打ち手のボードが相手のボードか
+2つ目: u64を8bitずつ区切って、何個目か
+3つ目: 区切った8bitの値
+それぞれに、メルセンヌ・ツイスターで得た乱数を格納しておく。(乱数はu64の範囲)
+
+hasherにhash_maskの値をもとにxorしたものを入れて、hashmapに格納orchackする。
+
+sfmt rand : https://docs.rs/sfmt/0.5.0/sfmt/
 
 ### SIMD命令を使う
 (使えるコンピュータなら)
@@ -16,7 +25,7 @@ https://doc.rust-lang.org/1.27.2/std/arch/index.html
 
 ### 評価関数の実装
 
-### α-β法の実装
+### α-β法, negamaxの実装
 
 ## install
 Rustのインストールのために、Unix系なら以下のコマンドを入力する
@@ -25,9 +34,11 @@ Rustのインストールのために、Unix系なら以下のコマンドを入
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-
-## nom
+## Crate
+### nom
 parserのために、nom(version 5.0.0)を使用した。
+### rand
+rand = "0.7.0"
 
 ## ディレクトリ構成
 srcディレクトリにソースコード一式がある。
