@@ -7,7 +7,7 @@ solver.rs: 終盤ソルバー用のファイル
 
 use crate::play::*;
 
-pub const  SOLVE_COUNT: i32 = 21;
+pub const  SOLVE_COUNT: i32 = 20;
 
 pub struct NextAndFlippable{
     pub next:u64,
@@ -117,11 +117,15 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
             while mask>0 {
                 if (mask&mobilitys)>0{
                     let (next_opponent, next_player) = flip_board( opponent, player, mask);
-                    // let pl_flippable_num = mobility_ps(next_player, next_opponent).count_ones() as i32;
-                    next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: 0}); // f_numは使わない
+                    let pl_flippable_num = mobility_ps(next_player, next_opponent).count_ones() as i32;
+                    next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: pl_flippable_num}); // f_numは使わない
                 }
                 mask = mask>>1;
             }
+        }
+
+        if count > 6{ // 最終6手ほどからは、ソートせずに全探索
+            next_vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
         }
 
         let mut def = 0;
