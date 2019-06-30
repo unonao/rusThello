@@ -7,7 +7,7 @@ solver.rs: 終盤ソルバー用のファイル
 
 use crate::play::*;
 
-pub const  SOLVE_COUNT: i32 = 20;
+pub const  SOLVE_COUNT: i32 = 16;
 
 pub struct NextAndFlippable{
     pub next:u64,
@@ -45,11 +45,12 @@ pub fn solve(player:u64, opponent:u64, count:i32)->u64{
         for next_and_f in &next_vec {
             let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count-1);
             if def > 0 { // 見つけたら終了
-                //println!("solved! def:{}",def);
+                println!("solved! def:{}",def);
                 return next_and_f.next
             }
 
         }
+        println!("not solved");
         return next_vec[0].next
     }
 }
@@ -89,10 +90,21 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
         let mut def = -64;
 
         // 最終1手のために条件分岐を毎回するのはコストが高い
-        /**/if count==2{ // 最終1手(相手)をその場で処理
+        /**/
+        if count==2{ // 最終1手(相手)をその場で処理
             let next = mobility_ps(next_vec[0].opponent, next_vec[0].player);
-            let (final_opponent, final_player) = flip_board(next_vec[0].opponent, next_vec[0].player, next);
-            return stone_def(final_player,final_opponent)
+            if next > 0{
+                let (final_opponent, final_player) = flip_board(next_vec[0].opponent, next_vec[0].player, next);
+                return stone_def(final_player,final_opponent)
+            }else{ // 相手がpass
+                let next = mobility_ps(next_vec[0].player,next_vec[0].opponent);
+                if next > 0{
+                    let (final_player,final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);
+                    return stone_def(final_player,final_opponent)
+                }else{
+                    return stone_def(next_vec[0].player, next_vec[0].opponent)
+                }
+            }
         }else{
             for next_and_f in next_vec {
                 def = rec_solver(next_and_f.player, next_and_f.opponent, false, count-1);
@@ -104,7 +116,7 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
         return def // 相手が
 
 
-    }else{ // 相手の手に関しては、すべての手に関して勝利する必要あり
+    }else{ // 相手の手に関しては、すべての手に関して勝利する必要あり(引き分けもだめ)
         let mobilitys = mobility_ps(opponent, player);
 
         if mobilitys==0{ // passのとき
@@ -131,17 +143,27 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
         let mut def = 0;
         if count==2{ // 最終1手(自分)をその場で処理
             let next = mobility_ps(next_vec[0].player, next_vec[0].opponent);
-            let (final_player, final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);
-            return stone_def(final_player,final_opponent)
+            if next > 0{
+                let (final_player, final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);
+                return stone_def(final_player,final_opponent)
+            }else{ // 自分がpass
+                let next = mobility_ps(next_vec[0].opponent,next_vec[0].player);
+                if next > 0{
+                    let (final_opponent,final_player) = flip_board( next_vec[0].opponent,next_vec[0].player, next);
+                    return stone_def(final_player,final_opponent)
+                }else{
+                    return stone_def(next_vec[0].player, next_vec[0].opponent)
+                }
+            }
         }else{/**/
             for next_and_f in next_vec {
                 def = rec_solver(next_and_f.player, next_and_f.opponent, true, count-1);
-                if def < 0 { // 見つけたら終了
+                if def <= 0 { // 見つけたら終了
                     return def // マイナス値
                 }
             }
         }
-        return def // プラス
+        return def // プラス値
     }
 
 

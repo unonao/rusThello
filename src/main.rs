@@ -115,13 +115,13 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
     println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
     print_board(&board);
     println!("{}",board.is_win(color));
-
+*/
     match win_lose.as_str() {
     "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
     "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
     "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
     _ => println!("parse error!")
-};*/
+};
 
 
 wait_start(&mut writer, &mut reader);
