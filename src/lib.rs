@@ -11,6 +11,12 @@ pub mod solver;
 mod tests {
     #[test]
     fn it_works() {
+        if cfg!(target_feature = "avx") {
+            println!("this program was compiled with AVX support");
+        }else{
+            println!("this program was not compiled with AVX support");
+        }
+        /*
         let board = crate::play::Board::init();
         let next = board.get_next(crate::color::BLACK, 60);
         let flippable = board.fast_flippable_stones(crate::color::BLACK, crate::play::move_to_bit(&next));
@@ -22,7 +28,7 @@ mod tests {
         let next = board.get_next(crate::color::BLACK,60);
         let flippable = board.fast_flippable_stones(crate::color::BLACK, crate::play::move_to_bit(&next));
         crate::print::print_unilateral(&flippable);
-
+*/
         /*
         let mut vec : Vec<crate::solver::NextAndFlippable> = Vec::new();
         vec.push(crate::solver::NextAndFlippable{next:1,f_num:100});

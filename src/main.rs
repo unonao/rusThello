@@ -193,8 +193,6 @@ fn wait_start(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<
 
 
 
-
-
     /*
     fn test_play(){
     let mut board = Board::init();
