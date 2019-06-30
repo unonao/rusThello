@@ -1,4 +1,7 @@
 extern crate nom;
+extern crate rand;
+
+
 pub mod play;
 pub mod command_parser;
 pub mod print;
@@ -9,8 +12,18 @@ pub mod solver;
 // cargo test -- --nocapture
 #[cfg(test)]
 mod tests {
+    use rand::prelude::*;
+
     #[test]
     fn it_works() {
+
+        let mut rng = rand::prelude::thread_rng();
+        let mut nums = [0u64; 10];
+        for x in &mut nums {
+            *x =  rng.gen();
+        }
+        println!("Some numbers: {:?}", nums);
+
         if cfg!(target_feature = "avx") {
             println!("this program was compiled with AVX support");
         }else{
