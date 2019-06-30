@@ -11,9 +11,18 @@ pub mod solver;
 mod tests {
     #[test]
     fn it_works() {
-        let x :u64 = 0x0080808080808080;
-        crate::print::print_unilateral(&x);
-        println!("{}", x.leading_zeros());
+        let board = crate::play::Board::init();
+        let next = board.get_next(crate::color::BLACK, 60);
+        let flippable = board.fast_flippable_stones(crate::color::BLACK, crate::play::move_to_bit(&next));
+        crate::print::print_unilateral(&flippable);
+
+        let board = board.flip_board(crate::color::BLACK, crate::play::move_to_bit(&next));
+        let next = board.get_next(crate::color::WHITE,60);
+        let board = board.flip_board(crate::color::WHITE, crate::play::move_to_bit(&next));
+        let next = board.get_next(crate::color::BLACK,60);
+        let flippable = board.fast_flippable_stones(crate::color::BLACK, crate::play::move_to_bit(&next));
+        crate::print::print_unilateral(&flippable);
+
         /*
         let mut vec : Vec<crate::solver::NextAndFlippable> = Vec::new();
         vec.push(crate::solver::NextAndFlippable{next:1,f_num:100});
