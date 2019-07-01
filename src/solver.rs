@@ -7,7 +7,7 @@ solver.rs: 終盤ソルバー用のファイル
 use crate::hash::*;
 use crate::play::*;
 
-pub const SOLVE_COUNT: i32 = 23;
+pub const SOLVE_COUNT: i32 = 18;
 pub const SOLVE_SORT: i32 = 5;
 pub const HASH_DEPTH: i32 = 0;
 

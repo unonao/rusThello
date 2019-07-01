@@ -499,7 +499,8 @@ impl Board {
 
         let mobilitys = mobility_ps(player, opponent);
         if count > SOLVE_COUNT {
-            let next: u64 = get_first_mobility(mobilitys); // 先頭のものを取得
+            //let next: u64 = get_first_mobility(mobilitys); // 先頭のものを取得
+            let next: u64 = get_by_simple_minimax(player, opponent, mobilitys); // simple_minimax
 
             if next == 0 {
                 Move::Pass

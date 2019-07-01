@@ -5,6 +5,7 @@ extern crate lazy_static;
 
 pub mod color;
 pub mod command_parser;
+pub mod eval;
 pub mod hash;
 pub mod play;
 pub mod print;
@@ -15,6 +16,7 @@ pub mod think;
 #[cfg(test)]
 mod tests {
 
+    use crate::eval::*;
     use crate::play::*;
     use crate::print::*;
     use crate::solver::*;
@@ -24,6 +26,7 @@ mod tests {
             black: 0b0000000100000001001100010010001100000011000000010000000100000000,
             white: 0b1001111001111110110011101101110011111100000111100000100000000000,
         };
+        println!("point: {}", sub_simple_eval(board.black));
 
         print_board(&board);
         print_unilateral(&solve(
@@ -31,6 +34,8 @@ mod tests {
             0b1001111001111110110011101101110011111100000111100000100000000000,
             20,
         ))
+        /*
+         */
 
         /*
         // let parsed = crate::command_parser::command_parse("OPEN player12345\n");
