@@ -189,9 +189,9 @@ fn proc_end(
     reason: String,
 ) {
     /*
-            println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
-            print_board(&board);
-            println!("{}",board.is_win(color));
+                println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
+                print_board(&board);
+                println!("{}",board.is_win(color));
     */
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n, m, reason),
@@ -319,7 +319,7 @@ println!("White 0");
 }
 let s = {
 let mut s = String::new(); // バッファを確保
-std::io::stdin().read_line(&mut s).unwrap(); // 一行読む。失敗を�������
+std::io::stdin().read_line(&mut s).unwrap(); // 一行読む。���敗を�������
 s.trim_right().to_owned() // 改行コードが末尾にくっついてくるので削る
 };
 let (n, m) = {

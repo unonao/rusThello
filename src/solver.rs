@@ -60,7 +60,7 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                 );
                 if def > 0 {
                     // 見つけたら終了
-                    //println!("solved! def:{}", def);
+                    println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
@@ -69,13 +69,13 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                 let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count - 1);
                 if def > 0 {
                     // 見つけたら終了
-                    //println!("solved! def:{}", def);
+                    println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
             //
         }
-        //println!("not solved");
+        println!("not solved");
         return next_vec[0].next;
     }
 }
