@@ -7,7 +7,7 @@ solver.rs: 終盤ソルバー用のファイル
 
 use crate::play::*;
 
-pub const  SOLVE_COUNT: i32 = 16;
+pub const  SOLVE_COUNT: i32 = 20;
 
 pub struct NextAndFlippable{
     pub next:u64,
@@ -16,7 +16,6 @@ pub struct NextAndFlippable{
     pub f_num:i32
 }
 
-/**/
 
 
 pub fn solve(player:u64, opponent:u64, count:i32)->u64{
@@ -91,7 +90,7 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
 
         // 最終1手のために条件分岐を毎回するのはコストが高い
         /**/
-        if count==2{ // 最終1手(相手)をその場で処理
+        if count==1{ // 最終1手(相手)をその場で処理
             let next = mobility_ps(next_vec[0].opponent, next_vec[0].player);
             if next > 0{
                 let (final_opponent, final_player) = flip_board(next_vec[0].opponent, next_vec[0].player, next);
@@ -141,7 +140,7 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
         }
 
         let mut def = 0;
-        if count==2{ // 最終1手(自分)をその場で処理
+        if count==1{ // 最終1手(自分)をその場で処理
             let next = mobility_ps(next_vec[0].player, next_vec[0].opponent);
             if next > 0{
                 let (final_player, final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);

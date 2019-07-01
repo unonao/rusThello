@@ -21,6 +21,7 @@ use rusThello::play::*;
 use rusThello::command_parser::*;
 use rusThello::print::*;
 use rusThello::color::*;
+use rusThello::hash::*;
 
 // サーバ接続
 use std::net::TcpStream;
@@ -181,7 +182,7 @@ fn wait_start(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<
     fn main() {
         // コマンドライン引数を変数に保存
         let (opt_host, opt_port, opt_player_name) = get_args();
-
+        init_rand_mask();
         // クライアントとして接続
         client(opt_host, opt_port, opt_player_name)
     }

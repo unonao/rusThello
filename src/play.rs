@@ -9,6 +9,7 @@ boardはu64*2のbit boardで表現する
 use std::time::{Instant};
 
 
+
 use crate::think::*;
 use crate::color::*;
 use crate::solver::*;
@@ -370,8 +371,11 @@ pub fn flippable_count(player:u64, opponent:u64, next:u64)-> i32 {
 
 pub struct Board {
     // bit board の構造体
-    pub black: u64, pub white: u64
+    pub black: u64, 
+    pub white: u64,
 }
+
+
 impl Board{
     pub fn new(x:u64,y:u64)->Board{
         Board{black:x, white:y}

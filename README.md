@@ -23,9 +23,12 @@ cat /proc/cpuinfo
 https://doc.rust-lang.org/1.27.2/std/arch/index.html
 参考: https://qiita.com/termoshtt/items/a1d3af42bc01c88273c8
 
+
 ### 評価関数の実装
 
 ### α-β法, negamaxの実装
+
+
 
 ## install
 Rustのインストールのために、Unix系なら以下のコマンドを入力する
@@ -34,11 +37,16 @@ Rustのインストールのために、Unix系なら以下のコマンドを入
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+
+
 ## Crate
 ### nom
 parserのために、nom(version 5.0.0)を使用した。
 ### rand
 rand = "0.7.0"
+### lazy_static
+グローバル変数を使用するため。
+lazy_static = "1.3.0"
 
 ## ディレクトリ構成
 srcディレクトリにソースコード一式がある。

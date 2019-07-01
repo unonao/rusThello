@@ -1,6 +1,7 @@
 extern crate nom;
 extern crate rand;
-
+#[macro_use]
+extern crate lazy_static;
 
 pub mod play;
 pub mod command_parser;
@@ -8,6 +9,7 @@ pub mod print;
 pub mod think;
 pub mod color;
 pub mod solver;
+pub mod hash;
 
 // cargo test -- --nocapture
 #[cfg(test)]
@@ -18,11 +20,19 @@ mod tests {
     fn it_works() {
 
         let mut rng = rand::prelude::thread_rng();
-        let mut nums = [0u64; 10];
-        for x in &mut nums {
-            *x =  rng.gen();
+        let mut num1 = [[[0u64; 256];8];2];
+         let mut num2 = [[[0u64; 256];8];2];
+        for i in 0..2 {
+            for j in 0..8{
+                for k in 0..256{
+                    num1[i][j][k] = rng.gen();
+                }
+            }
         }
-        println!("Some numbers: {:?}", nums);
+        /*for x in &mut num2 {
+            *x =  rng.gen();
+        }*/
+        println!("Some numbers: {},{}", num1[0][0][100], num1[1][3][50]);
 
         if cfg!(target_feature = "avx") {
             println!("this program was compiled with AVX support");
