@@ -7,7 +7,8 @@ solver.rs: 終盤ソルバー用のファイル
 
 use crate::play::*;
 
-pub const  SOLVE_COUNT: i32 = 16;
+pub const  SOLVE_COUNT: i32 = 24;
+pub const  SOLVE_SORT: i32 = 4;
 
 pub struct NextAndFlippable{
     pub next:u64,
@@ -16,10 +17,11 @@ pub struct NextAndFlippable{
     pub f_num:i32
 }
 
-/**/
 
 
 pub fn solve(player:u64, opponent:u64, count:i32)->u64{
+    //let blank = !(player|opponent);
+    //println!("count:{}, blank:{}",count, blank.count_ones());
     /*
     読み切りをして、次の手を返す
     速さ優先探索: 相手が次打てる手が少ないものから探索
@@ -45,12 +47,12 @@ pub fn solve(player:u64, opponent:u64, count:i32)->u64{
         for next_and_f in &next_vec {
             let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count-1);
             if def > 0 { // 見つけたら終了
-                println!("solved! def:{}",def);
+                //println!("solved! def:{}",def);
                 return next_and_f.next
             }
 
         }
-        println!("not solved");
+        //println!("not solved");
         return next_vec[0].next
     }
 }
@@ -73,47 +75,47 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
                 return rec_solver(player, opponent, false, count) // 空きマスはまだあるので、countは減らさずturnを変える
             }
         }else{
-            while mask>0 {
-                if (mask&mobilitys)>0{
-                    let (next_player, next_opponent) = flip_board(player, opponent, mask);
-                    let op_flippable_num = mobility_ps(next_opponent, next_player).count_ones() as i32;
-                    next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: op_flippable_num});
-                }
-                mask = mask>>1;
-            }
-        }
-
-        if count > 6{ // 最終6手ほどからは、ソートせずに全探索
-            next_vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
-        }
-
-        let mut def = -64;
-
-        // 最終1手のために条件分岐を毎回するのはコストが高い
-        /**/
-        if count==2{ // 最終1手(相手)をその場で処理
-            let next = mobility_ps(next_vec[0].opponent, next_vec[0].player);
-            if next > 0{
-                let (final_opponent, final_player) = flip_board(next_vec[0].opponent, next_vec[0].player, next);
-                return stone_def(final_player,final_opponent)
-            }else{ // 相手がpass
-                let next = mobility_ps(next_vec[0].player,next_vec[0].opponent);
-                if next > 0{
-                    let (final_player,final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);
-                    return stone_def(final_player,final_opponent)
+            if count==1{ // 最終1手(自分)をその場で処理
+                let (next_player, next_opponent) = flip_board(player, opponent, mobilitys); // mobilitysは0でないので1のみ
+                return stone_def(next_player, next_opponent)
+            }else if count==2{ // 最終2手(自分->相手)をその場で処理
+                // mobilitysは0ではないので、1か2
+                let next1:u64 = 0x8000000000000000 >> mobilitys.leading_zeros();
+                let (next1_player, next1_opponent) = flip_board(player, opponent, next1); // mobilitysは0でないので1のみ
+                let def1 = rec_solver(next1_player, next1_opponent, false, count-1);
+                if def1 > 0{
+                    def1
                 }else{
-                    return stone_def(next_vec[0].player, next_vec[0].opponent)
+                    let next2:u64 = 0x0000000000000001 << mobilitys.trailing_zeros();
+                    let (next2_player, next2_opponent) = flip_board(player, opponent, next2); // mobilitysは2つある
+                    let def2 = rec_solver(next2_player, next2_opponent, false, count-1);
+                    def2
                 }
-            }
-        }else{
-            for next_and_f in next_vec {
-                def = rec_solver(next_and_f.player, next_and_f.opponent, false, count-1);
-                if def > 0 { // 見つけたら終了
-                    return def
+            }else{
+                let mut def = -64;
+                while mask>0 {
+                    if (mask&mobilitys)>0{
+                        let (next_player, next_opponent) = flip_board(player, opponent, mask);
+                        let op_flippable_num = mobility_ps(next_opponent, next_player).count_ones() as i32;
+                        next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: op_flippable_num});
+                    }
+                    mask = mask>>1;
                 }
+                if count > SOLVE_SORT{ // 最終6手ほどからは、ソートせずに全探索
+                    next_vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
+                }
+                for next_and_f in next_vec {
+                    def = rec_solver(next_and_f.player, next_and_f.opponent, false, count-1);
+                    if def > 0 { // 見つけたら終了
+                        return def
+                    }
+                }
+                return def // 相手が
             }
+            
         }
-        return def // 相手が
+
+
 
 
     }else{ // 相手の手に関しては、すべての手に関して勝利する必要あり(引き分けもだめ)
@@ -123,47 +125,48 @@ fn rec_solver(player:u64, opponent:u64, is_player:bool, count:i32)->i32{
             if is_finished(player, opponent){
                 return stone_def(player, opponent)
             }else{
-                return rec_solver(player, opponent, !is_player, count) // 空きマスはまだあるので、countは減らさずturnを変える
+                return rec_solver(player, opponent, true, count) // 空きマスはまだあるので、countは減らさずturnを変える
             }
         }else{
-            while mask>0 {
-                if (mask&mobilitys)>0{
-                    let (next_opponent, next_player) = flip_board( opponent, player, mask);
-                    let pl_flippable_num = mobility_ps(next_player, next_opponent).count_ones() as i32;
-                    next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: pl_flippable_num}); // f_numは使わない
-                }
-                mask = mask>>1;
-            }
-        }
-
-        if count > 6{ // 最終6手ほどからは、ソートせずに全探索
-            next_vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
-        }
-
-        let mut def = 0;
-        if count==2{ // 最終1手(自分)をその場で処理
-            let next = mobility_ps(next_vec[0].player, next_vec[0].opponent);
-            if next > 0{
-                let (final_player, final_opponent) = flip_board(next_vec[0].player, next_vec[0].opponent, next);
-                return stone_def(final_player,final_opponent)
-            }else{ // 自分がpass
-                let next = mobility_ps(next_vec[0].opponent,next_vec[0].player);
-                if next > 0{
-                    let (final_opponent,final_player) = flip_board( next_vec[0].opponent,next_vec[0].player, next);
-                    return stone_def(final_player,final_opponent)
+            if count==1{ // 最終1手(相手)をその場で処理
+                let (next_opponent, next_player) = flip_board(opponent, player, mobilitys); // mobilitysは0でないので1のみ
+                return stone_def(next_player,next_opponent)
+            }else if count==2{ // 最終2手(相手->自分)をその場で処理
+                // mobilitysは0ではないので、1か2
+                let next1:u64 = 0x8000000000000000 >> mobilitys.leading_zeros();
+                let (next1_opponent, next1_player) = flip_board(opponent, player, next1); // mobilitysは0でないので1のみ
+                let def1 = rec_solver(next1_player, next1_opponent, true, count-1);
+                if def1 <= 0{
+                    def1
                 }else{
-                    return stone_def(next_vec[0].player, next_vec[0].opponent)
+                    let next2:u64 = 0x0000000000000001 << mobilitys.trailing_zeros();
+                    let (next2_opponent, next2_player) = flip_board(opponent, player, next2); // mobilitysは2つある
+                    let def2 = rec_solver(next2_player, next2_opponent, true, count-1);
+                    def2
                 }
-            }
-        }else{/**/
-            for next_and_f in next_vec {
-                def = rec_solver(next_and_f.player, next_and_f.opponent, true, count-1);
-                if def <= 0 { // 見つけたら終了
-                    return def // マイナス値
+            }else{
+                let mut def = 0;
+                while mask>0 {
+                    if (mask&mobilitys)>0{
+                        let (next_opponent, next_player) = flip_board( opponent, player, mask);
+                        let pl_flippable_num = mobility_ps(next_player, next_opponent).count_ones() as i32;
+                        next_vec.push(NextAndFlippable{next:mask, player:next_player,opponent:next_opponent, f_num: pl_flippable_num}); // f_numは使わない
+                    }
+                    mask = mask>>1;
                 }
+                if count > SOLVE_SORT{ // 最終6手ほどからは、ソートせずに全探索
+                    next_vec.sort_unstable_by(|a,b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
+                }
+                for next_and_f in next_vec {
+                    def = rec_solver(next_and_f.player, next_and_f.opponent, true, count-1);
+                    if def <= 0 { // 見つけたら終了
+                        return def // マイナス値
+                    }
+                }
+                return def // プラス値
             }
         }
-        return def // プラス値
+        
     }
 
 

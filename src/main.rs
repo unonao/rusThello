@@ -21,6 +21,7 @@ use rusThello::play::*;
 use rusThello::command_parser::*;
 use rusThello::print::*;
 use rusThello::color::*;
+use rusThello::hash::*;
 
 // サーバ接続
 use std::net::TcpStream;
@@ -115,16 +116,15 @@ fn proc_end(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&T
     println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
     print_board(&board);
     println!("{}",board.is_win(color));
-*/
+
     match win_lose.as_str() {
-    "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
-    "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
-    "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
-    _ => println!("parse error!")
-};
+        "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n,m,reason),
+        "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n,m,reason),
+        "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n,m,reason),
+        _ => println!("parse error!")
+    };*/
 
-
-wait_start(&mut writer, &mut reader);
+    wait_start(&mut writer, &mut reader);
 
 }
 
@@ -132,6 +132,7 @@ wait_start(&mut writer, &mut reader);
 // ゲームスタート
 fn start_game(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>, color:String, opponent_name:String, time:i32){
     let board = Board::init() ;
+    
     let mut hist_vec: Vec<Move> = Vec::new();
     if color=="BLACK" {
         my_move(&mut writer, &mut reader, board, 60, BLACK, opponent_name, time, &mut hist_vec)
@@ -181,7 +182,7 @@ fn wait_start(mut writer:&mut BufWriter<&TcpStream>, mut reader: &mut BufReader<
     fn main() {
         // コマンドライン引数を変数に保存
         let (opt_host, opt_port, opt_player_name) = get_args();
-
+        init_rand_mask();
         // クライアントとして接続
         client(opt_host, opt_port, opt_player_name)
     }
