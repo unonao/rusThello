@@ -41,6 +41,7 @@ mod tests {
         }
         /*
         let board = crate::play::Board::init();
+        println!("{}",make_hash(board.black,board.white));
         let next = board.get_next(crate::color::BLACK, 60);
         let flippable = board.fast_flippable_stones(crate::color::BLACK, crate::play::move_to_bit(&next));
         crate::print::print_unilateral(&flippable);
