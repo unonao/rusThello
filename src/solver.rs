@@ -7,9 +7,9 @@ solver.rs: 終盤ソルバー用のファイル
 use crate::hash::*;
 use crate::play::*;
 
-pub const SOLVE_COUNT: i32 = 24;
+pub const SOLVE_COUNT: i32 = 23;
 pub const SOLVE_SORT: i32 = 5;
-pub const HASH_DEPTH: i32 = 20;
+pub const HASH_DEPTH: i32 = 0;
 
 pub struct NextAndFlippable {
     pub next: u64,
@@ -60,7 +60,7 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                 );
                 if def > 0 {
                     // 見つけたら終了
-                    println!("solved! def:{}", def);
+                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
@@ -69,13 +69,13 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                 let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count - 1);
                 if def > 0 {
                     // 見つけたら終了
-                    println!("solved! def:{}", def);
+                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
             //
         }
-        println!("not solved");
+        //println!("not solved");
         return next_vec[0].next;
     }
 }
@@ -231,7 +231,14 @@ fn rec_solver_with_hashmap(
         {
             let mut map_mut = Map_mut.read().unwrap();
             match map_mut.get(&hasher) {
-                Some(result) => return *result,
+                Some(result) => {
+                    /*
+                    println!(
+                        "matched! result:{}, count:{}, depth:{}",
+                        result, count, depth
+                    );*/
+                    return *result;
+                }
                 None => {}
             }
         }

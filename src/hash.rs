@@ -1,5 +1,5 @@
 // 乱数
-use rand::prelude::*;
+use rand::Rng;
 
 use std::collections::HashMap;
 use std::sync::RwLock;
@@ -11,13 +11,18 @@ lazy_static! {
 }
 
 pub fn init_rand_mask() {
-    let mut rng = rand::prelude::thread_rng();
+    let mut rng = rand::thread_rng();
     {
         let mut rand_mask = Rand_mask.write().unwrap();
+
         for i in 0..2 {
             for j in 0..8 {
+                /*rng.fill(&mut rand_mask);*/
                 for k in 0..256 {
                     rand_mask[i][j][k] = rng.gen();
+                    /*if rand_mask[i][j][k] > 0x0000008000000000 {
+                        println!("{}", rand_mask[i][j][k])
+                    };*/
                 }
             }
         }
