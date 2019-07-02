@@ -9,6 +9,7 @@ boardはu64*2のbit boardで表現する
 use std::time::Instant;
 
 use crate::color::*;
+use crate::global::*;
 use crate::print::*;
 use crate::solver::*;
 use crate::think::*;
@@ -18,33 +19,34 @@ pub enum Move {
     Pass,
     GiveUp,
 }
+
 /*
-pub enum Opmove{
-PMove(Move),
-OMove(Move)
-}
+    座標(0~7が2つ), u64のbit列, Move構造体、プロトコル用の文字列の相互変換
 */
 pub fn coordinate_to_bit(x: i32, y: i32) -> u64 {
-    /*
-    0~7のx,yを受け取り、座標をbitに変換
-    */
-    let mask: u64 = 0x8000000000000000; //左端だけが 1
+    let mask: u64 = 0x8000000000000000;
     mask >> (x + y * 8)
 }
 pub fn bit_to_coordinate(mask: u64) -> (i32, i32) {
-    /*
-    input : u64で表した座標
-    output : 0~7の座標x,y
-    */
     let lead_zeros = mask.leading_zeros() as i32;
     (lead_zeros % 8, lead_zeros / 8)
 }
-
+pub fn move_to_bit(m: &Move) -> u64 {
+    match m {
+        Move::Pass => 0,
+        Move::GiveUp => 0,
+        Move::Mv { x: i, y: j } => coordinate_to_bit(*i, *j),
+    }
+}
+pub fn bit_to_move(mask: u64) -> Move {
+    if mask > 0 {
+        let (x, y) = bit_to_coordinate(mask);
+        Move::Mv { x: x, y: y }
+    } else {
+        Move::Pass
+    }
+}
 pub fn move_to_string(m: &Move) -> String {
-    /*
-    input: Move構造体
-    output: プロトコル用の座標に変換
-    */
     match m {
         Move::Pass => "PASS".to_string(),
         Move::GiveUp => "GIVEUP".to_string(),
@@ -56,44 +58,15 @@ pub fn move_to_string(m: &Move) -> String {
     }
 }
 
-pub fn move_to_bit(m: &Move) -> u64 {
-    /*
-    input: Move構造体
-    output: bitで表した座標
-    */
-    match m {
-        Move::Pass => 0,
-        Move::GiveUp => 0,
-        Move::Mv { x: i, y: j } => coordinate_to_bit(*i, *j),
-    }
-}
-pub fn bit_to_move(mask: u64) -> Move {
-    /*
-    input: bitで表した座標
-    output: Move構造体
-    */
-    if mask > 0 {
-        let (x, y) = bit_to_coordinate(mask);
-        Move::Mv { x: x, y: y }
-    } else {
-        Move::Pass
-    }
-}
-
 pub fn stone_def(player: u64, opponent: u64) -> i32 {
-    /*
-    石数の差を返す関数
-    */
+    // 石数の差を返す関数
     let player_num = player.count_ones() as i32;
     let opponent_num = opponent.count_ones() as i32;
     player_num - opponent_num
 }
 
 pub fn mobility_ps(player: u64, opponent: u64) -> u64 {
-    /*
-    ボードと白と黒どちらの手番かを受け取って、
-    着手可能な場所をbitで返す関数(高速)
-    */
+    //着手可能な場所をbitで返す関数(高速)
     let blank = !(player | opponent);
     let mo = opponent & 0x7e7e7e7e7e7e7e7e;
 
@@ -193,7 +166,6 @@ pub fn is_win(player: u64, opponent: u64) -> bool {
     if player_num > opponent_num {
         true
     } else {
-        // 引き分けのとき
         false
     }
 }
@@ -207,10 +179,7 @@ pub fn is_finished(player: u64, opponent: u64) -> bool {
     }
 }
 pub fn flip_board(player: u64, opponent: u64, next: u64) -> (u64, u64) {
-    /*
-    input: board, 打ち手の色, 次の手
-    output: flipしたあとのboard
-    */
+    // flipしたあとのboardを返す
     if next > 0 {
         let rev = flippable_stones(player, opponent, next);
         return (player ^ (rev ^ next), opponent ^ rev);
@@ -220,10 +189,7 @@ pub fn flip_board(player: u64, opponent: u64, next: u64) -> (u64, u64) {
 }
 
 pub fn flippable_stones(player: u64, opponent: u64, next: u64) -> u64 {
-    /*
-    高速に反転位置を求めるメソッド
-    */
-
+    // 高速に反転位置を求めるメソッド
     let mut omask = opponent;
 
     let pos = next.leading_zeros();
@@ -299,10 +265,7 @@ pub fn flippable_stones(player: u64, opponent: u64, next: u64) -> u64 {
 }
 
 pub fn flippable_count(player: u64, opponent: u64, next: u64) -> i32 {
-    /*
-    高速に反転数を求めるメソッド(solverの速さ優先探索で利用)
-    */
-
+    //高速に反転数を求めるメソッド
     let mut omask = opponent;
 
     let pos = next.leading_zeros();
@@ -489,7 +452,7 @@ impl Board {
     pub fn get_next(&self, color: i32, count: i32) -> Move {
         /*
         次の手を取得
-        思考ルーチンによって変更する必要あり
+        思考ルーチンによって変更する
         */
         let (player, opponent) = if color == BLACK {
             (self.black, self.white)
@@ -498,10 +461,14 @@ impl Board {
         };
 
         let mobilitys = mobility_ps(player, opponent);
-        if count > SOLVE_COUNT {
-            //let next: u64 = get_first_mobility(mobilitys); // 先頭のものを取得
-            let next: u64 = get_by_simple_minimax(player, opponent, mobilitys); // simple_minimax
-
+        if count > SOLVE_START {
+            let next: u64 = {
+                match unsafe { Thinker } {
+                    "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
+                    "rusThello" => get_by_simple_minimax(player, opponent, mobilitys), // simple_minimax
+                    _ => get_by_simple_minimax(player, opponent, mobilitys),
+                }
+            };
             if next == 0 {
                 Move::Pass
             } else {
@@ -512,7 +479,7 @@ impl Board {
             let start = Instant::now();
             let next: u64 = solve(player, opponent, count);
             let end = start.elapsed();
-            if count == SOLVE_COUNT {
+            if count == SOLVE_START {
                 println!(
                     "count:{}  {}.{:03}秒経過しました。",
                     count,
@@ -641,7 +608,7 @@ impl Board {
         let tmp = if outflank != 0 { 1 } else { 0 };
         let mut flipped = (outflank - tmp) & mask;
 
-        // 下 (右端に1(右下除く))
+        // 下
         let mask = 0x0080808080808080 >> pos;
         let outflank =
             (0x8000000000000000 as u64).wrapping_shr(((!omask) & mask).leading_zeros()) & player;
@@ -857,7 +824,7 @@ tmp |= masked & (tmp >> num);
 tmp |= masked & (tmp >> num);
 tmp |= masked & (tmp >> num);
 tmp |= masked & (tmp >> num);
-tmp |= masked & (tmp >> num); // bitが立っているのは相手の碁が連続しているところ
+tmp |= masked & (tmp >> num); // bitが立っているのは���手の碁が連続している���ころ
 let mobility = blank & (tmp >> num);
 mobility
 }

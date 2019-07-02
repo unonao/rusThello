@@ -6,6 +6,7 @@ extern crate lazy_static;
 pub mod color;
 pub mod command_parser;
 pub mod eval;
+pub mod global;
 pub mod hash;
 pub mod play;
 pub mod print;

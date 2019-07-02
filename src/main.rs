@@ -7,6 +7,7 @@ random
 
 クライアント
 cargo run "127.0.0.1" 30000 rusThello
+cargo run "127.0.0.1" 30000 first
 cargo run --release "127.0.0.1" 30000 rusThello
 
 */
@@ -16,6 +17,7 @@ cargo run --release "127.0.0.1" 30000 rusThello
 extern crate rusThello;
 use rusThello::color::*;
 use rusThello::command_parser::*;
+use rusThello::global::*;
 use rusThello::hash::*;
 use rusThello::play::*;
 use rusThello::print::*;
@@ -28,9 +30,7 @@ use std::net::TcpStream;
 pub fn input_command(reader: &mut BufReader<&TcpStream>) -> Message {
     let mut message = String::new();
     reader.read_line(&mut message).expect("Could not read!");
-
     // println!("{}",message); // input 内容を出力
-
     match command_parse(message.as_str()) {
         Ok((_input, message)) => message,
         _ => {
@@ -192,13 +192,13 @@ fn proc_end(
                 println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
                 print_board(&board);
                 println!("{}",board.is_win(color));
-    */
+
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n, m, reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n, m, reason),
         "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n, m, reason),
         _ => println!("parse error!"),
-    };
+    };*/
 
     wait_start(&mut writer, &mut reader);
 }
@@ -318,7 +318,7 @@ println!("Black 1");
 println!("White 0");
 }
 let s = {
-let mut s = String::new(); // バッファを確保
+let mut s = String::new(); // バッファ��������確保
 std::io::stdin().read_line(&mut s).unwrap(); // 一行読む。���敗を�������
 s.trim_right().to_owned() // 改行コードが末尾にくっついてくるので削る
 };

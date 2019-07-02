@@ -4,12 +4,9 @@ solver.rs: 終盤ソルバー用のファイル
 
 */
 
+use crate::global::*;
 use crate::hash::*;
 use crate::play::*;
-
-pub const SOLVE_COUNT: i32 = 18;
-pub const SOLVE_SORT: i32 = 5;
-pub const HASH_DEPTH: i32 = 0;
 
 pub struct NextAndFlippable {
     pub next: u64,
@@ -59,8 +56,7 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                     1,
                 );
                 if def > 0 {
-                    // 見つけたら終了
-                    println!("solved! def:{}", def);
+                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
@@ -68,22 +64,18 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
             for next_and_f in &next_vec {
                 let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count - 1);
                 if def > 0 {
-                    // 見つけたら終了
-                    println!("solved! def:{}", def);
+                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
             //
         }
-        println!("not solved");
+        //println!("not solved");
         return next_vec[0].next;
     }
 }
 
 fn rec_solver(player: u64, opponent: u64, is_player: bool, count: i32) -> i32 {
-    /*
-    探索をして、石数を返す
-    */
     let mut mask: u64 = 0x8000000000000000;
     let mut next_vec: Vec<NextAndFlippable> = Vec::new();
 
@@ -133,7 +125,7 @@ fn rec_solver(player: u64, opponent: u64, is_player: bool, count: i32) -> i32 {
                     }
                     mask = mask >> 1;
                 }
-                if count > SOLVE_SORT {
+                if count > SOLVE_SORT_END {
                     // 最終6手ほどからは、ソートせずに全探索
                     next_vec.sort_unstable_by(|a, b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
                 }
@@ -193,9 +185,9 @@ fn rec_solver(player: u64, opponent: u64, is_player: bool, count: i32) -> i32 {
                     }
                     mask = mask >> 1;
                 }
-                if count > SOLVE_SORT {
-                    // 最終6手ほどからは、ソートせずに全探索
-                    next_vec.sort_unstable_by(|a, b| a.f_num.cmp(&b.f_num)); // f_numについて昇順に(速さ優先探索)
+                if count > SOLVE_SORT_END {
+                    // 最終6手ほどからは、ソートせず���全探索
+                    next_vec.sort_unstable_by(|a, b| a.f_num.cmp(&b.f_num)); // f_numについ��昇順に(速さ優先探索)
                 }
                 for next_and_f in next_vec {
                     def = rec_solver(next_and_f.player, next_and_f.opponent, true, count - 1);

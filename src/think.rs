@@ -3,12 +3,10 @@
     think.rs: 思考ルーチン用ファイル
 
 */
-pub const INFINITY: i32 = 1 << 30;
-pub const THINE_DEPTH: i32 = 2;
 
 use crate::eval::*;
+use crate::global::*;
 use crate::play::*;
-//use crate::color::*;
 
 pub fn get_first_mobilitys(mobilitys: u64) -> u64 {
     // 最初の着手可能場所を取得(最も単純な思考ルーチン)
