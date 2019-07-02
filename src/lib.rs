@@ -2,7 +2,9 @@ extern crate nom;
 extern crate rand;
 #[macro_use]
 extern crate lazy_static;
+extern crate clap;
 
+pub mod arg;
 pub mod color;
 pub mod command_parser;
 pub mod eval;

@@ -15,6 +15,7 @@ cargo run --release "127.0.0.1" 30000 rusThello
 #![allow(non_snake_case)]
 
 extern crate rusThello;
+use rusThello::arg::*;
 use rusThello::color::*;
 use rusThello::command_parser::*;
 use rusThello::global::*;
@@ -280,70 +281,7 @@ fn main() {
     // コマンドライン引数を変数に保存
     let (opt_host, opt_port, opt_player_name) = get_args();
     init_rand_mask();
+    arg_get();
     // クライアントとして接続
     client(opt_host, opt_port, opt_player_name)
 }
-
-/*
-    fn test_play(){
-    let mut board = Board::init();
-    let player_color = BLACK;
-    print_board(&board);
-
-    let flippable:u64 = board.mobility_ps(player_color);
-    println!("flippable");
-    print_unilateral(&flippable);
-
-    let next:u64 = get_first_mobility(flippable);
-    println!("next");
-    print_unilateral(&next);
-
-    let flippable:u64 = board.flippable_stones(player_color, next);
-    println!("flippable");
-    print_unilateral(&flippable);
-
-    board = board.flip_board(player_color, flippable);
-    print_board(&board);
-
-}
-
-fn play_me_vs_me(){
-let mut board = Board::init();
-let mut player_color = BLACK;
-loop {
-print_board(&board);
-if player_color==BLACK {
-println!("Black 1");
-}else{
-println!("White 0");
-}
-let s = {
-let mut s = String::new(); // バッファ��������確保
-std::io::stdin().read_line(&mut s).unwrap(); // 一行読む。���敗を�������
-s.trim_right().to_owned() // 改行コードが末尾にくっついてくるので削る
-};
-let (n, m) = {
-let mut ws = s.split_whitespace(); // 空白区切りの単語に分解する
-let n: i32 = ws.next().unwrap().parse().unwrap(); // イテレータから値を取り出して整数に
-let m: i32 = ws.next().unwrap().parse().unwrap();
-(n, m)
-};
-if n>8 {break}
-let flippable:u64 = board.mobility_ps(player_color);
-if flippable == 0 {
-println!("end game!");
-}
-let next:u64 = coordinate_to_bit(n,m);
-if (next&flippable)!=next {
-println!("not flippable!");
-continue
-}
-board = board.flip_board(player_color,next);
-player_color = player_color^1;
-}
-
-}
-
-
-
-*/

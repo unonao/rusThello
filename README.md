@@ -7,11 +7,11 @@ https://doc.rust-jp.rs/book/second-edition/ch08-03-hash-maps.html
 1つ目: 打ち手のボードが相手のボードか
 2つ目: u64を8bitずつ区切って、何個目か
 3つ目: 区切った8bitの値
-それぞれに、メルセンヌ・ツイスターで得た乱数を格納しておく。(乱数はu64の範囲)
+それぞれに、乱数を格納しておく。(乱数はu64の範囲)
 
-hasherにhash_maskの値をもとにxorしたものを入れて、hashmapに格納orchackする。
+hasherにhash_maskの値をもとにxorしたものを入れて、hashmapに格納or checkする。
+→あまり効果なし（ロックしているせいか？）
 
-sfmt rand : https://docs.rs/sfmt/0.5.0/sfmt/
 
 ### SIMD命令を使う
 (使えるコンピュータなら)
@@ -47,6 +47,9 @@ rand = "0.7.0"
 ### lazy_static
 グローバル変数を使用するため。
 lazy_static = "1.3.0"
+
+### clap
+コマンドライン引数の使用
 
 ## ディレクトリ構成
 srcディレクトリにソースコード一式がある。
