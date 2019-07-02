@@ -4,7 +4,7 @@ play.rs: オセロ用の基本関数を集めたファイル
 boardはu64*2のbit boardで表現する
 
 */
-
+use std::env;
 // 時間計測
 use std::time::Instant;
 
@@ -463,7 +463,8 @@ impl Board {
         let mobilitys = mobility_ps(player, opponent);
         if count > SOLVE_START {
             let next: u64 = {
-                match unsafe { Thinker } {
+                let args: Vec<String> = env::args().collect();
+                match args[3].as_str() {
                     "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
                     "rusThello" => get_by_simple_minimax(player, opponent, mobilitys), // simple_minimax
                     _ => get_by_simple_minimax(player, opponent, mobilitys),

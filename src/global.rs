@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::sync::RwLock;
 
-pub static Thinker: &str = "rusThello";
+pub static mut Thinker: &str = "rusThello";
 
 lazy_static! {
     /*

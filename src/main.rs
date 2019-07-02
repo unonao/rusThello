@@ -15,7 +15,6 @@ cargo run --release "127.0.0.1" 30000 rusThello
 #![allow(non_snake_case)]
 
 extern crate rusThello;
-use rusThello::arg::*;
 use rusThello::color::*;
 use rusThello::command_parser::*;
 use rusThello::global::*;
@@ -281,7 +280,6 @@ fn main() {
     // コマンドライン引数を変数に保存
     let (opt_host, opt_port, opt_player_name) = get_args();
     init_rand_mask();
-    arg_get();
     // クライアントとして接続
     client(opt_host, opt_port, opt_player_name)
 }
