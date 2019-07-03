@@ -461,10 +461,10 @@ impl Board {
         };
 
         let mobilitys = mobility_ps(player, opponent);
-        if count > SOLVE_START {
+        if count > Args.solve_start {
             let next: u64 = {
-                let args: Vec<String> = env::args().collect();
-                match args[3].as_str() {
+                //let args: Vec<String> = env::args().collect();
+                match Args.name.as_str() {
                     "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
                     "rusThello" => get_by_simple_minimax(player, opponent, mobilitys), // simple_minimax
                     _ => get_by_simple_minimax(player, opponent, mobilitys),
@@ -480,7 +480,7 @@ impl Board {
             let start = Instant::now();
             let next: u64 = solve(player, opponent, count);
             let end = start.elapsed();
-            if count == SOLVE_START {
+            if count == Args.solve_start {
                 println!(
                     "count:{}  {}.{:03}秒経過しました。",
                     count,

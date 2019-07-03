@@ -1,14 +1,14 @@
 /*
 
 server
-./reversi-serv -p 30000 -t 500
+./reversi-serv -p 3000 -t 500
 random
-./reversi -H "localhost" -p 30000 -n Player2
+./reversi -H "localhost" -p 3000 -n Player2
 
-クライアント
-cargo run "127.0.0.1" 30000 rusThello
-cargo run "127.0.0.1" 30000 first
-cargo run --release "127.0.0.1" 30000 rusThello
+クライアント　1:ipアドレス, 2:port, 3:name 18, 4:solve_depth, 5:think_depth
+cargo run "127.0.0.1" 3000 rusThello
+cargo run "127.0.0.1" 3000 first 20 2
+cargo run --release "127.0.0.1" 3000 rusThello 23 2
 
 */
 
@@ -22,9 +22,11 @@ use rusThello::hash::*;
 use rusThello::play::*;
 use rusThello::print::*;
 
+use std::env;
 // サーバ接続
 use std::io::{BufRead, BufReader};
 use std::io::{BufWriter, Write};
+// serverへStringを送信
 use std::net::TcpStream;
 // serverからのコマンドを一行読み込んでパース
 pub fn input_command(reader: &mut BufReader<&TcpStream>) -> Message {
@@ -43,22 +45,6 @@ pub fn input_command(reader: &mut BufReader<&TcpStream>) -> Message {
 pub fn output_command(writer: &mut BufWriter<&TcpStream>, command: String) {
     writer.write(command.as_bytes()).expect("Write failed");
     let _ = writer.flush();
-}
-
-// コマンドライン引数
-use std::env;
-fn get_args() -> (String, String, String) {
-    // コマンドライン引数を取得
-    let args: Vec<String> = env::args().collect();
-    let len = args.len();
-    let opt_host = if len > 0 { &args[1] } else { "127.0.0.1" };
-    let opt_port = if len > 1 { &args[2] } else { "30000" };
-    let opt_player_name = if len > 2 { &args[3] } else { "rusThello" };
-    (
-        opt_host.to_string(),
-        opt_port.to_string(),
-        opt_player_name.to_string(),
-    )
 }
 
 fn my_move(
@@ -189,16 +175,16 @@ fn proc_end(
     reason: String,
 ) {
     /*
-                println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
-                print_board(&board);
-                println!("{}",board.is_win(color));
-
+                    println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
+                    print_board(&board);
+                    println!("{}",board.is_win(color));
+    */
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n, m, reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n, m, reason),
         "TIE" => println!("Draw! ({}vs. {}) -- {}.\n", n, m, reason),
         _ => println!("parse error!"),
-    };*/
+    };
 
     wait_start(&mut writer, &mut reader);
 }
@@ -256,30 +242,27 @@ fn wait_start(mut writer: &mut BufWriter<&TcpStream>, mut reader: &mut BufReader
     }
 }
 
-fn client(host: String, port: String, name: String) {
+fn client() {
     /*
-    input : ホスト、ポート、プレーヤー名
     サーバーへ接続し、OPEN nameを送信。wait_startを呼び出す
     */
 
     // サーバーへ接続
-    let addr = format!("{}:{}", host, port);
+    let addr = format!("{}:{}", Args.host, Args.port);
     println!("Connecting to {}.", addr);
     let stream = TcpStream::connect(addr).expect("Connection refused");
     let mut writer = BufWriter::new(&stream);
     let mut reader = BufReader::new(&stream);
 
     // OPEN name を送信
-    let open_and_name = format!("OPEN {}\n", name);
+    let open_and_name = format!("OPEN {}\n", Args.name);
     output_command(&mut writer, open_and_name);
 
     wait_start(&mut writer, &mut reader);
 }
 
 fn main() {
-    // コマンドライン引数を変数に保存
-    let (opt_host, opt_port, opt_player_name) = get_args();
     init_rand_mask();
     // クライアントとして接続
-    client(opt_host, opt_port, opt_player_name)
+    client()
 }

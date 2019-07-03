@@ -1,7 +1,5 @@
 /*
-
     think.rs: 思考ルーチン用ファイル
-
 */
 
 use crate::eval::*;
@@ -42,7 +40,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
                     next_opponent,
                     false,
                     next_mobilitys,
-                    THINE_DEPTH,
+                    Args.think_depth,
                 );
                 if best < val {
                     best = val;
