@@ -13,6 +13,7 @@ use crate::global::*;
 use crate::print::*;
 use crate::solver::*;
 use crate::think::*;
+use rand::Rng;
 
 pub enum Move {
     Mv { x: i32, y: i32 }, // x,yは0~7
@@ -466,7 +467,16 @@ impl Board {
                 //let args: Vec<String> = env::args().collect();
                 match Args.name.as_str() {
                     "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
-                    "rusThello" => get_by_simple_minimax(player, opponent, mobilitys), // simple_minimax
+                    "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
+                    "rusThedom" => {
+                        let mut rng = rand::thread_rng();
+                        if rng.gen() {
+                            get_first_mobilitys(mobilitys) // 先頭のものを取得
+                        } else {
+                            get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
+                        }
+                    }
+
                     _ => get_by_simple_minimax(player, opponent, mobilitys),
                 }
             };

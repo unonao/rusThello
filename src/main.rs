@@ -8,7 +8,9 @@ random
 クライアント　1:ipアドレス, 2:port, 3:name 18, 4:solve_depth, 5:think_depth
 cargo run "127.0.0.1" 3000 rusThello
 cargo run "127.0.0.1" 3000 first 20 2
-cargo run --release "127.0.0.1" 3000 rusThello 23 2
+cargo run "192.168.80.1" 3000 rusThedom 12  4
+
+cargo run --release "127.0.0.1" 3000 rusThello 23 4
 
 */
 

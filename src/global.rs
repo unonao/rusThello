@@ -4,7 +4,6 @@
 use std::collections::HashMap;
 use std::env;
 use std::sync::RwLock;
-pub static mut Thinker: &str = "rusThello";
 
 lazy_static! {
     /*
@@ -42,8 +41,8 @@ pub struct Args_st {
     pub think_depth: i32,
 }
 
-pub const INFINITY: i32 = 1 << 30;
-
+pub const MAX: i32 = 1 << 30;
+pub const MIN: i32 = -(1 << 30);
 // for solver
 pub const SOLVE_SORT_END: i32 = 5;
 pub const HASH_DEPTH: i32 = 0;
