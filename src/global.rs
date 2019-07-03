@@ -51,6 +51,7 @@ lazy_static! {
             } else {
                 "info".to_string()
             },
+            no_solve:if matches.value_of("name").unwrap()=="random"{true}else{false}
         }
     };
 
@@ -67,6 +68,7 @@ pub struct ArgsSt {
     pub solve_start: i32,
     pub think_depth: i32,
     pub level: String,
+    pub no_solve: bool,
 }
 
 pub const MAX: i32 = 1 << 30;

@@ -2,12 +2,36 @@
 
     think.rs: 思考ルーチン用ファイル
 */
+use rand::Rng;
 
 use crate::eval::*;
 use crate::global::*;
 use crate::play::*;
 
-pub fn get_first_mobilitys(mobilitys: u64) -> u64 {
+pub fn get_by_random(mobilitys: u64) -> u64 {
+    // 最初の着手可能場所を取得(最も単純な思考ルーチン)
+    let mut mask: u64 = 0x8000000000000000;
+    let mobility_count = mobilitys.count_ones();
+    if mobility_count == 0 {
+        return 0;
+    } else {
+        let mut rng = rand::thread_rng();
+        let random_num = rng.gen_range(0, mobility_count);
+        let mut count = 0;
+        for _i in 0..64 {
+            if (mask & mobilitys) == mask {
+                if count == random_num {
+                    return mask;
+                }
+                count = count + 1;
+            }
+            mask = mask >> 1;
+        }
+    }
+    return mask;
+}
+
+pub fn get_by_first(mobilitys: u64) -> u64 {
     // 最初の着手可能場所を取得(最も単純な思考ルーチン)
     let mut mask: u64 = 0x8000000000000000;
     if mobilitys == 0 {

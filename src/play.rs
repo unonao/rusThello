@@ -460,16 +460,17 @@ impl Board {
         };
 
         let mobilitys = mobility_ps(player, opponent);
-        if count > ARGS.solve_start {
+        if count > ARGS.solve_start || ARGS.no_solve {
             let next: u64 = {
                 //let args: Vec<String> = env::args().collect();
                 match ARGS.name.as_str() {
-                    "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
+                    "random" => get_by_random(mobilitys),
+                    "first" => get_by_first(mobilitys), // 先頭のものを取得
                     "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                     "rusThedom" => {
                         let mut rng = rand::thread_rng();
                         if rng.gen() {
-                            get_first_mobilitys(mobilitys) // 先頭のものを取得
+                            get_by_first(mobilitys) // 先頭のものを取得
                         } else {
                             get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
                         }
@@ -597,7 +598,7 @@ impl Board {
 
     pub fn flippable_stones(&self, color: i32, next: u64) -> u64 {
         /*
-        ���速に反転位置を求めるメソッド
+        ���速に���転位置を求めるメソッド
         */
 
         let (player, opponent) = if color == BLACK {

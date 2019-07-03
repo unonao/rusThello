@@ -268,6 +268,7 @@ fn client() {
     // OPEN name を送信
     let open_and_name = format!("OPEN {}\n", ARGS.name);
     output_command(&mut writer, open_and_name);
+    println!("waiting start ...");
 
     wait_start(&mut writer, &mut reader);
 }
