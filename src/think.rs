@@ -41,7 +41,7 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u
                     next_opponent,
                     false,
                     next_mobilitys,
-                    Args.think_depth,
+                    ARGS.think_depth,
                     MIN,
                     MAX,
                 );
@@ -68,7 +68,7 @@ fn alpha_beta(
     beta: i32,
 ) -> i32 {
     /* 葉の場合、評価値を返す */
-    if (depth <= 0) {
+    if depth <= 0 {
         return simple_eval(player, opponent);
     }
     let mut mask: u64 = 0x8000000000000000;
@@ -112,7 +112,7 @@ fn alpha_beta(
                             beta,
                         ),
                     );
-                    if (beta <= alp) {
+                    if beta <= alp {
                         break;
                     }
                 }
@@ -159,7 +159,7 @@ fn alpha_beta(
                             be,
                         ),
                     );
-                    if (be <= alpha) {
+                    if be <= alpha {
                         break;
                     }
                 }
@@ -188,7 +188,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
                     next_opponent,
                     false,
                     next_mobilitys,
-                    Args.think_depth,
+                    ARGS.think_depth,
                 );
                 if best < val {
                     best = val;
@@ -204,7 +204,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
 
 fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i32) -> i32 {
     /* 葉の場合、評価値を返す */
-    if (depth <= 0) {
+    if depth <= 0 {
         return simple_eval(player, opponent);
     }
     let mut mask: u64 = 0x8000000000000000;
@@ -230,7 +230,7 @@ fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i
                     let (next_player, next_opponent) = flip_board(player, opponent, mask);
                     let next_mobilitys = mobility_ps(next_opponent, next_player);
                     let val = minimax(next_player, next_opponent, false, next_mobilitys, depth - 1);
-                    if (best < val) {
+                    if best < val {
                         best = val;
                     }
                 }
@@ -257,7 +257,7 @@ fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i
                     let (next_opponent, next_player) = flip_board(opponent, player, mask);
                     let next_mobilitys = mobility_ps(next_player, next_opponent);
                     let val = minimax(next_player, next_opponent, true, next_mobilitys, depth - 1);
-                    if (best < -val) {
+                    if best < -val {
                         best = -val;
                     }
                 }

@@ -187,7 +187,7 @@ fn rec_solver(player: u64, opponent: u64, is_player: bool, count: i32) -> i32 {
                 }
                 if count > SOLVE_SORT_END {
                     // 最終6手ほどからは、ソートせず���全探索
-                    next_vec.sort_unstable_by(|a, b| a.f_num.cmp(&b.f_num)); // f_numについ��昇順に(速さ優先探索)
+                    next_vec.sort_unstable_by(|a, b| a.f_num.cmp(&b.f_num)); // f_numについ����昇順に(速さ優先探索)
                 }
                 for next_and_f in next_vec {
                     def = rec_solver(next_and_f.player, next_and_f.opponent, true, count - 1);
@@ -221,7 +221,7 @@ fn rec_solver_with_hashmap(
         // 自身の手に関しては、勝利するものが見つかれば終了
         let hasher = make_hash(player, opponent);
         {
-            let mut map_mut = Map_mut.read().unwrap();
+            let map_mut = MAP_MUT.read().unwrap();
             match map_mut.get(&hasher) {
                 Some(result) => {
                     /*
@@ -302,7 +302,7 @@ fn rec_solver_with_hashmap(
     } else {
         let hasher = make_hash(opponent, player);
         {
-            let mut map_mut = Map_mut.read().unwrap();
+            let map_mut = MAP_MUT.read().unwrap();
             match map_mut.get(&hasher) {
                 Some(result) => return *result,
                 None => {}

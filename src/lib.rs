@@ -1,6 +1,8 @@
 extern crate nom;
 extern crate rand;
 #[macro_use]
+extern crate clap;
+#[macro_use]
 extern crate lazy_static;
 
 pub mod color;

@@ -4,13 +4,12 @@ play.rs: オセロ用の基本関数を集めたファイル
 boardはu64*2のbit boardで表現する
 
 */
-use std::env;
 // 時間計測
 use std::time::Instant;
 
 use crate::color::*;
 use crate::global::*;
-use crate::print::*;
+//use crate::print::*;
 use crate::solver::*;
 use crate::think::*;
 use rand::Rng;
@@ -462,10 +461,10 @@ impl Board {
         };
 
         let mobilitys = mobility_ps(player, opponent);
-        if count > Args.solve_start {
+        if count > ARGS.solve_start {
             let next: u64 = {
                 //let args: Vec<String> = env::args().collect();
-                match Args.name.as_str() {
+                match ARGS.name.as_str() {
                     "first" => get_first_mobilitys(mobilitys), // 先頭のものを取得
                     "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                     "rusThedom" => {
@@ -490,7 +489,7 @@ impl Board {
             let start = Instant::now();
             let next: u64 = solve(player, opponent, count);
             let end = start.elapsed();
-            if count == Args.solve_start {
+            if count == ARGS.solve_start {
                 println!(
                     "count:{}  {}.{:03}秒経過しました。",
                     count,

@@ -1,44 +1,72 @@
 /*
     共通の定数や変数などをまとめたファイル
 */
+use clap::{App, Arg, ArgGroup, SubCommand};
 use std::collections::HashMap;
-use std::env;
+//use std::env;
 use std::sync::RwLock;
-
 lazy_static! {
-    /*
-    pub static ref Thinker: RwLock<&'static str> = {
-        RwLock::new("rusThello")
-    };*/
-    pub static ref Args: Args_st = {
-        let args: Vec<String> = env::args().collect();
-        let len = args.len();
-        let opt_host = if len > 1 { &args[1] } else { "127.0.0.1" };
-        let opt_port = if len > 2 { &args[2] } else { "30000" };
-        let opt_player_name = if len > 3 { &args[3] } else { "rusThello" };
-        let opt_solve_start:i32 = if len > 4 { args[4].parse().unwrap() } else { 18 };
-        let think_depth:i32 = if len > 5 { args[5].parse().unwrap() } else { 2 };
-        Args_st{
-            host:opt_host.to_string(),
-            port:opt_port.to_string(),
-            name:opt_player_name.to_string(),
-            solve_start:opt_solve_start,
-            think_depth:think_depth,
+    pub static ref ARGS: ArgsSt = {
+
+        let app = App::new(crate_name!())   // Cargo.tomlのnameを参照する
+            .version(crate_version!())      // Cargo.tomlのversionを参照する
+            .author(crate_authors!())       // Cargo.tomlのauthorsを参照する
+            .about(crate_description!())    // Cargo.tomlのdescriptionを参照する
+            .arg(Arg::from_usage("[VERBOSE] -v --verbose 'verbose mode'"))
+            .arg(Arg::from_usage("-h --host [HOST] 'host ip address'").default_value("127.0.0.1"))
+            .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
+            .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
+            .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("18"))
+            .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("4"))
+            .args_from_usage("--verb 'verbose mode: level group'
+                                --debug 'debug mode: level group'
+                                --info 'info mode: level group'")
+            .group(ArgGroup::with_name("level") // グループ名
+                .args(&["verb", "debug", "info"])
+            )
+        ;
+        // 引数を解析
+        let matches = app.get_matches();
+
+        if matches.is_present("level") {
+            let (verb, debug, _) = (matches.is_present("verb"),
+                                    matches.is_present("debug"),
+                                    matches.is_present("info"));
+            println!("level is {}", if verb {"verb"} else if debug {"debug"} else {"info"});
+        }else{
+            println!("level is info");
+        }
+
+        ArgsSt{
+            host:matches.value_of("host").unwrap().to_string(),
+            port:matches.value_of("port").unwrap().to_string(),
+            name:matches.value_of("name").unwrap().to_string(),
+            solve_start:matches.value_of("solve").unwrap().parse().unwrap(),
+            think_depth:matches.value_of("think").unwrap().parse().unwrap(),
+            level: if matches.is_present("level") {
+                let (verb, debug, _) = (matches.is_present("verb"),
+                        matches.is_present("debug"),
+                        matches.is_present("info"));
+                if verb {"verb".to_string()} else if debug {"debug".to_string()} else {"info".to_string()}
+            } else {
+                "info".to_string()
+            },
         }
     };
 
-    pub static ref Rand_mask :RwLock<[[[u64; 256];8];2]> = RwLock::new([[[0u64; 256];8];2]); // zobrist hash 用の乱数
-    pub static ref Map_mut: RwLock<HashMap<u64, i32>> = {
+    pub static ref RAND_MASK :RwLock<[[[u64; 256];8];2]> = RwLock::new([[[0u64; 256];8];2]); // zobrist hash 用の乱数
+    pub static ref MAP_MUT: RwLock<HashMap<u64, i32>> = {
         RwLock::new(HashMap::new())
     };
 }
 
-pub struct Args_st {
+pub struct ArgsSt {
     pub host: String,
     pub port: String,
     pub name: String,
     pub solve_start: i32,
     pub think_depth: i32,
+    pub level: String,
 }
 
 pub const MAX: i32 = 1 << 30;

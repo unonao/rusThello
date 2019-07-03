@@ -1,7 +1,7 @@
 /*
     評価関数
 */
-use crate::print::*;
+//use crate::print::*;
 
 pub fn simple_eval(me: u64, op: u64) -> i32 {
     sub_simple_eval(me) - sub_simple_eval(op)

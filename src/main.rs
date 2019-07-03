@@ -1,16 +1,21 @@
 /*
 
 server
-./reversi-serv -p 3000 -t 500
+    ./reversi-serv -p 3000 -t 500
 random
-./reversi -H "localhost" -p 3000 -n Player2
+    ./reversi -H "localhost" -p 3000 -n Player2
 
-クライアント　1:ipアドレス, 2:port, 3:name 18, 4:solve_depth, 5:think_depth
-cargo run "127.0.0.1" 3000 rusThello
-cargo run "127.0.0.1" 3000 first 20 2
-cargo run "192.168.80.1" 3000 rusThedom 12  4
 
-cargo run --release "127.0.0.1" 3000 rusThello 23 4
+クライアント
+    cargo run -h "127.0.0.1" -p 3000 -n rusThello
+    cargo run
+verboseは -v
+solve_depth(default: 18) -s 23
+think_depth(default: 4) -t 7
+
+
+最強
+    cargo run --release -- -h "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
 
 */
 
@@ -24,7 +29,6 @@ use rusThello::hash::*;
 use rusThello::play::*;
 use rusThello::print::*;
 
-use std::env;
 // サーバ接続
 use std::io::{BufRead, BufReader};
 use std::io::{BufWriter, Write};
@@ -250,14 +254,14 @@ fn client() {
     */
 
     // サーバーへ接続
-    let addr = format!("{}:{}", Args.host, Args.port);
+    let addr = format!("{}:{}", ARGS.host, ARGS.port);
     println!("Connecting to {}.", addr);
     let stream = TcpStream::connect(addr).expect("Connection refused");
     let mut writer = BufWriter::new(&stream);
     let mut reader = BufReader::new(&stream);
 
     // OPEN name を送信
-    let open_and_name = format!("OPEN {}\n", Args.name);
+    let open_and_name = format!("OPEN {}\n", ARGS.name);
     output_command(&mut writer, open_and_name);
 
     wait_start(&mut writer, &mut reader);
