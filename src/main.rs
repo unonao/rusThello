@@ -187,13 +187,12 @@ fn proc_end(
     reason: String,
 ) {
     println!(
-        "Oppnent name: {} ({}).\n",
+        "Oppnent name: {} (color:{}).",
         opponent_name,
         opposite_color(color)
     );
+    println!("Your name: {} (color:{}).\n", ARGS.name, color);
     print_board(&board);
-    println!("{}", board.is_win(color));
-
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n, m, reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n, m, reason),

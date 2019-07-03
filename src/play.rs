@@ -460,17 +460,23 @@ impl Board {
         };
 
         let mobilitys = mobility_ps(player, opponent);
-        if count > ARGS.solve_start || ARGS.no_solve {
-            let next: u64 = {
+
+        let mut next: u64 = 0;
+        if ARGS.eval && count >= 53 {
+            // 残りマス数53までランダム(53のときに最後に打って、のこり52)
+            next = get_by_random(mobilitys);
+        } else if count > ARGS.solve_start || ARGS.no_solve {
+            next = {
                 //let args: Vec<String> = env::args().collect();
                 match ARGS.name.as_str() {
                     "random" => get_by_random(mobilitys),
                     "first" => get_by_first(mobilitys), // 先頭のものを取得
                     "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                     "rusThedom" => {
+                        // randomでrandomに選ぶ
                         let mut rng = rand::thread_rng();
                         if rng.gen() {
-                            get_by_first(mobilitys) // 先頭のものを取得
+                            get_by_random(mobilitys)
                         } else {
                             get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
                         }
@@ -479,15 +485,9 @@ impl Board {
                     _ => get_by_simple_minimax(player, opponent, mobilitys),
                 }
             };
-            if next == 0 {
-                Move::Pass
-            } else {
-                let (x, y) = bit_to_coordinate(next);
-                Move::Mv { x: x, y: y }
-            }
         } else {
             let start = Instant::now();
-            let next: u64 = solve(player, opponent, count);
+            next = solve(player, opponent, count);
             let end = start.elapsed();
             if count == ARGS.solve_start {
                 println!(
@@ -497,12 +497,13 @@ impl Board {
                     end.subsec_nanos() / 1_000_000
                 );
             }
-            if next == 0 {
-                Move::Pass
-            } else {
-                let (x, y) = bit_to_coordinate(next);
-                Move::Mv { x: x, y: y }
-            }
+        }
+
+        if next == 0 {
+            Move::Pass
+        } else {
+            let (x, y) = bit_to_coordinate(next);
+            Move::Mv { x: x, y: y }
         }
     }
 
@@ -823,7 +824,7 @@ tmp |= masked & (tmp << num);
 tmp |= masked & (tmp << num);
 tmp |= masked & (tmp << num);
 tmp |= masked & (tmp << num);
-tmp |= masked & (tmp << num); // bitが立っているのは相手の碁が連続しているところ
+tmp |= masked & (tmp << num); // bitが���っているのは相手の碁が連続しているところ
 let mobility = blank & (tmp << num);
 mobility
 }

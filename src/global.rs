@@ -12,7 +12,7 @@ lazy_static! {
             .version(crate_version!())      // Cargo.tomlのversionを参照する
             .author(crate_authors!())       // Cargo.tomlのauthorsを参照する
             .about(crate_description!())    // Cargo.tomlのdescriptionを参照する
-            .arg(Arg::from_usage("[VERBOSE] -v --verbose 'verbose mode'"))
+            .arg(Arg::from_usage("[eval] -e --eval 'eval thinker'"))
             .arg(Arg::from_usage("-h --host [HOST] 'host ip address'").default_value("127.0.0.1"))
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
@@ -51,7 +51,8 @@ lazy_static! {
             } else {
                 "info".to_string()
             },
-            no_solve:if matches.value_of("name").unwrap()=="random"{true}else{false}
+            no_solve:if matches.value_of("name").unwrap()=="random"{true}else{false},
+            eval:if matches.is_present("eval") {true} else {false}
         }
     };
 
@@ -69,6 +70,7 @@ pub struct ArgsSt {
     pub think_depth: i32,
     pub level: String,
     pub no_solve: bool,
+    pub eval: bool,
 }
 
 pub const MAX: i32 = 1 << 30;
