@@ -420,7 +420,6 @@ impl Board {
         output: flipしたあとのboard
         */
         let next: u64 = move_to_bit(next);
-        //print_unilateral(&next);
         if next > 0 {
             let rev = self.flippable_stones(color, next);
             if color == BLACK {
@@ -598,7 +597,7 @@ impl Board {
 
     pub fn flippable_stones(&self, color: i32, next: u64) -> u64 {
         /*
-        高速に反転位置を求めるメソッド
+        ���速に反転位置を求めるメソッド
         */
 
         let (player, opponent) = if color == BLACK {

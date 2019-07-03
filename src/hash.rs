@@ -14,18 +14,12 @@ pub fn init_rand_mask() {
         let mut rand_mask = RAND_MASK.write().unwrap();
         for i in 0..2 {
             for j in 0..8 {
-                /*rng.fill(&mut rand_mask);*/
                 for k in 0..256 {
                     rand_mask[i][j][k] = rng.gen();
-                    /*if rand_mask[i][j][k] > 0x0000008000000000 {
-                        println!("{}", rand_mask[i][j][k])
-                    };*/
                 }
             }
         }
     }
-    //let mut rand_mask = RAND_MASK.read().unwrap();
-    //println!("{}", rand_mask[1][3][100])
 }
 
 pub fn make_hash(me: u64, op: u64) -> u64 {
@@ -46,7 +40,3 @@ pub fn hash_insert(hasher: u64, result: i32) {
     let mut map_mut = MAP_MUT.write().unwrap();
     map_mut.insert(hasher, result);
 }
-
-/*
-
-*/

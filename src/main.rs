@@ -9,7 +9,7 @@ random
 クライアント
     cargo run -h "127.0.0.1" -p 3000 -n rusThello
     cargo run
-verboseは -v
+verboseは --verbose, debugは --debug, infoはデフォルトで --info
 solve_depth(default: 18) -s 23
 think_depth(default: 4) -t 7
 
@@ -32,13 +32,16 @@ use rusThello::print::*;
 // サーバ接続
 use std::io::{BufRead, BufReader};
 use std::io::{BufWriter, Write};
-// serverへStringを送信
 use std::net::TcpStream;
-// serverからのコマンドを一行読み込んでパース
+
 pub fn input_command(reader: &mut BufReader<&TcpStream>) -> Message {
+    // serverからのコマンドを一行読み込んでパース
     let mut message = String::new();
     reader.read_line(&mut message).expect("Could not read!");
-    // println!("{}",message); // input 内容を出力
+    //
+    if ARGS.level.as_str() == "verb" {
+        println!("{}", message); // input 内容を出力
+    }
     match command_parse(message.as_str()) {
         Ok((_input, message)) => message,
         _ => {
@@ -47,8 +50,9 @@ pub fn input_command(reader: &mut BufReader<&TcpStream>) -> Message {
         }
     }
 }
-// serverへStringを送信
+
 pub fn output_command(writer: &mut BufWriter<&TcpStream>, command: String) {
+    // serverへStringを送信
     writer.write(command.as_bytes()).expect("Write failed");
     let _ = writer.flush();
 }
@@ -63,12 +67,14 @@ fn my_move(
     time: i32,
     mut hist: &mut Vec<Move>,
 ) {
-    let pmove: Move = board.get_next(color, count); // 次に打つ手
+    let pmove: Move = board.get_next(color, count);
     let board = board.flip_board_by_move(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
-    //print_board(&board);
-    //println!("my_move {}", move_send);
+    if ARGS.level.as_str() == "verb" {
+        print_board(&board);
+        println!("my move: {}", move_send);
+    }
     let count = match pmove {
         Move::Pass => count,
         _ => count - 1,
@@ -180,11 +186,14 @@ fn proc_end(
     m: i32,
     reason: String,
 ) {
-    /*
-                    println!("Oppnent name: {} ({}).\n", opponent_name, opposite_color(color));
-                    print_board(&board);
-                    println!("{}",board.is_win(color));
-    */
+    println!(
+        "Oppnent name: {} ({}).\n",
+        opponent_name,
+        opposite_color(color)
+    );
+    print_board(&board);
+    println!("{}", board.is_win(color));
+
     match win_lose.as_str() {
         "WIN" => println!("You win! ({} vs. {}) -- {}.\n", n, m, reason),
         "LOSE" => println!("You lose! ({} vs. {}) -- {}.\n", n, m, reason),
@@ -231,10 +240,8 @@ fn start_game(
     }
 }
 
-// スタート待ち
 fn wait_start(mut writer: &mut BufWriter<&TcpStream>, mut reader: &mut BufReader<&TcpStream>) {
     /*
-    input : writer, reader
     "START color opponent_name time"を受け取るまで待機
     */
 
@@ -249,9 +256,7 @@ fn wait_start(mut writer: &mut BufWriter<&TcpStream>, mut reader: &mut BufReader
 }
 
 fn client() {
-    /*
-    サーバーへ接続し、OPEN nameを送信。wait_startを呼び出す
-    */
+    //サーバーへ接続し、OPEN nameを送信。wait_startを呼び出す
 
     // サーバーへ接続
     let addr = format!("{}:{}", ARGS.host, ARGS.port);

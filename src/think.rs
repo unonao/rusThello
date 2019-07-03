@@ -52,7 +52,6 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u
             }
             mask = mask >> 1;
         }
-        //println!("best:{}\n", best);
         return next;
     }
 }
@@ -197,7 +196,6 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
             }
             mask = mask >> 1;
         }
-        //println!("best:{}\n", best);
         return next;
     }
 }

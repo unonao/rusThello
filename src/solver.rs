@@ -16,8 +16,6 @@ pub struct NextAndFlippable {
 }
 
 pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
-    //let blank = !(player|opponent);
-    //println!("count:{}, blank:{}",count, blank.count_ones());
     /*
     読み切りをして、次の手を返す
     速さ優先探索: 相手が次打てる手が少ないものから探索
@@ -56,7 +54,6 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
                     1,
                 );
                 if def > 0 {
-                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
@@ -64,13 +61,10 @@ pub fn solve(player: u64, opponent: u64, count: i32) -> u64 {
             for next_and_f in &next_vec {
                 let def = rec_solver(next_and_f.player, next_and_f.opponent, false, count - 1);
                 if def > 0 {
-                    //println!("solved! def:{}", def);
                     return next_and_f.next;
                 }
             }
-            //
         }
-        //println!("not solved");
         return next_vec[0].next;
     }
 }
@@ -192,7 +186,7 @@ fn rec_solver(player: u64, opponent: u64, is_player: bool, count: i32) -> i32 {
                 for next_and_f in next_vec {
                     def = rec_solver(next_and_f.player, next_and_f.opponent, true, count - 1);
                     if def <= 0 {
-                        // 見つけたら終了
+                        // ��つけたら終了
                         return def; // マイナス値
                     }
                 }
@@ -224,11 +218,6 @@ fn rec_solver_with_hashmap(
             let map_mut = MAP_MUT.read().unwrap();
             match map_mut.get(&hasher) {
                 Some(result) => {
-                    /*
-                    println!(
-                        "matched! result:{}, count:{}, depth:{}",
-                        result, count, depth
-                    );*/
                     return *result;
                 }
                 None => {}
