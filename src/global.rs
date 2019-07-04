@@ -16,8 +16,8 @@ lazy_static! {
             .arg(Arg::from_usage("-h --host [HOST] 'host ip address'").default_value("127.0.0.1"))
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
-            .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("18"))
-            .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("4"))
+            .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("12"))
+            .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("3"))
             .args_from_usage("--verb 'verbose mode: level group'
                                 --debug 'debug mode: level group'
                                 --info 'info mode: level group'")

@@ -471,6 +471,7 @@ impl Board {
                 match ARGS.name.as_str() {
                     "random" => get_by_random(mobilitys),
                     "first" => get_by_first(mobilitys), // 先頭のものを取得
+                    "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                     "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                     "rusThedom" => {
                         // randomでrandomに選ぶ

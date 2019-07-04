@@ -92,7 +92,7 @@ fn alpha_beta(
 ) -> i32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return simple_eval(player, opponent);
+        return board_eval(player, opponent);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -227,7 +227,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
 fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i32) -> i32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return simple_eval(player, opponent);
+        return board_eval(player, opponent);
     }
     let mut mask: u64 = 0x8000000000000000;
 
