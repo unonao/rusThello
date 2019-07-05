@@ -4,6 +4,7 @@ extern crate rand;
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
+extern crate rusty_machine as rm;
 
 pub mod book;
 pub mod color;
@@ -26,19 +27,45 @@ mod tests {
     use crate::print::*;
     use crate::rotate::*;
     use crate::solver::*;
+    use rm::learning::nnet::{BCECriterion, NeuralNet};
+    use rm::learning::optim::grad_desc::StochasticGD;
+    use rm::learning::toolkit::regularization::Regularization;
+    use rm::learning::SupModel;
+    use rm::linalg::Matrix;
     #[test]
     fn it_works() {
-        let bit: u64 = 0b1001111001111110110011101101110011111100000111100000100000000000;
-        print_unilateral(&bit);
-        print_unilateral(&rotate90clockwise(&bit));
-        print_unilateral(&rotate180(&bit));
-        print_unilateral(&rotate90antiClockwise(&bit));
+        let inputs = Matrix::new(
+            5,
+            3,
+            vec![1., 1., 1., 2., 2., 2., 3., 3., 3., 4., 4., 4., 5., 5., 5.],
+        );
+        let targets = Matrix::new(
+            5,
+            3,
+            vec![1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 1., 0., 0., 1.],
+        );
 
-        let board = Board {
-            black: 0b0000000100000001001100010010001100000011000000010000000100000000,
-            white: 0b1001111001111110110011101101110011111100000111100000100000000000,
-        };
-        print_board(&board);
+        // Set the layer sizes - from input to output
+        let layers = &[3, 5, 11, 7, 3];
+
+        // Choose the BCE criterion with L2 regularization (`lambda=0.1`).
+        let criterion = BCECriterion::new(Regularization::L2(0.1));
+
+        // We will just use the default stochastic gradient descent.
+        let mut model = NeuralNet::new(layers, criterion, StochasticGD::default());
+
+        // Train the model!
+        model.train(&inputs, &targets).unwrap();
+
+        let test_inputs = Matrix::new(2, 3, vec![1.5, 1.5, 1.5, 5.1, 5.1, 5.1]);
+
+        // And predict new output from the test inputs
+        let outputs = model.predict(&test_inputs).unwrap();
+        println!("{}", outputs);
+
+        model.train(&inputs, &targets).unwrap();
+        let outputs = model.predict(&test_inputs).unwrap();
+        println!("{}", outputs);
         /*
 
         println!("point: {}", sub_simple_eval(board.black));

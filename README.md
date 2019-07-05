@@ -49,6 +49,12 @@ think_depth(default: 4) -t 7
 cargo run --release -- -h "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
 ```
 
+## レギュレーション
+実行用のファイルサイズが4MBまで。対局の持ち時間は1戦で1分。
+リリースバージョンなら、ファイルサイズは1MB~2MB前後。
+その他使うのが、xxx_composed.csvファイルで、581KB。
+これらの合計は4MB未満。
+
 ## Crate
 ### nom
 parserのために、nom(version 5.0.0)を使用した。
