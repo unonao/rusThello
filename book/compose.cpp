@@ -21,7 +21,7 @@ int print_uint128(__uint128_t n){ //1文字
     }
 
 int main() {
-    ifstream ifs("xxx.gam");
+    ifstream ifs("../data/xxx.gam");
 
     string str, result_in_black_view, end10;
     //int skip = 0;
