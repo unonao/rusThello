@@ -1,7 +1,8 @@
 /*
     共通の定数や変数などをまとめたファイル
 */
-use clap::{App, Arg, ArgGroup, SubCommand};
+use clap::{App, Arg, ArgGroup};
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 //use std::env;
 use std::sync::RwLock;
@@ -23,11 +24,8 @@ lazy_static! {
                                 --info 'info mode: level group'")
             .group(ArgGroup::with_name("level") // グループ名
                 .args(&["verb", "debug", "info"])
-            )
-        ;
-        // 引数を解析
-        let matches = app.get_matches();
-
+            );
+        let matches = app.get_matches();// 引数を解析
         if matches.is_present("level") {
             let (verb, debug, _) = (matches.is_present("verb"),
                                     matches.is_present("debug"),
@@ -55,6 +53,11 @@ lazy_static! {
             eval:if matches.is_present("eval") {true} else {false}
         }
     };
+
+    pub static ref BOOK :RwLock<BTreeMap<u128, f32>> = RwLock::new(BTreeMap::new()); // openning book
+    pub static ref HIST :RwLock<u128> = RwLock::new(0);
+    pub static ref ROTATE_NUM :RwLock<i32> = RwLock::new(0);
+
 
     pub static ref RAND_MASK :RwLock<[[[u64; 256];8];2]> = RwLock::new([[[0u64; 256];8];2]); // zobrist hash 用の乱数
     pub static ref MAP_MUT: RwLock<HashMap<u64, i32>> = {

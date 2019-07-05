@@ -5,6 +5,7 @@ extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 
+pub mod book;
 pub mod color;
 pub mod command_parser;
 pub mod eval;
@@ -12,6 +13,7 @@ pub mod global;
 pub mod hash;
 pub mod play;
 pub mod print;
+pub mod rotate;
 pub mod solver;
 pub mod think;
 
@@ -22,13 +24,23 @@ mod tests {
     use crate::eval::*;
     use crate::play::*;
     use crate::print::*;
+    use crate::rotate::*;
     use crate::solver::*;
     #[test]
     fn it_works() {
+        let bit: u64 = 0b1001111001111110110011101101110011111100000111100000100000000000;
+        print_unilateral(&bit);
+        print_unilateral(&rotate90clockwise(&bit));
+        print_unilateral(&rotate180(&bit));
+        print_unilateral(&rotate90antiClockwise(&bit));
+
         let board = Board {
             black: 0b0000000100000001001100010010001100000011000000010000000100000000,
             white: 0b1001111001111110110011101101110011111100000111100000100000000000,
         };
+        print_board(&board);
+        /*
+
         println!("point: {}", sub_simple_eval(board.black));
 
         print_board(&board);
@@ -37,7 +49,7 @@ mod tests {
             0b1001111001111110110011101101110011111100000111100000100000000000,
             20,
         ))
-        /*
+
          */
 
         /*

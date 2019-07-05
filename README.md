@@ -27,7 +27,27 @@ Rustのインストールのために、Unix系なら以下のコマンドを入
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+## 使い方
+(rusThelloディレクトリで以下のコマンドを使用する)
+```
+cargo run -h "127.0.0.1" -p 3000 -n rusThello
+```
 
+または
+
+```
+cargo run
+```
+
+verboseは --verbose, debugは --debug, infoはデフォルトで --info
+solve_depth(default: 18) -s 23
+think_depth(default: 4) -t 7
+
+
+対戦モード
+```
+cargo run --release -- -h "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
+```
 
 ## Crate
 ### nom
@@ -51,6 +71,9 @@ srcディレクトリにソースコード一式がある。
 - solver.rs: 終盤ソルバー用のファイル
 - think.rs: 思考ルーチン用ファイル
 
+## Openning book
+Logistelloの棋譜データをもとに、序盤に似たような手を見つけたら、最も評価値が高い手をうつ。
+BTreeMapはStringにたいしてRangeメソッドを使用できなかったので、u128に収まるように、前半21手分のデータを保存した。
 
 ## Board
 ファイルはplay.rs
@@ -67,7 +90,7 @@ bit boardで実装。
 はじめはmobilityの計算と同様に、ビットシフトを繰り返して相手の石の場所を伝播させていったが、
 計算に時間がかかるので、高速化のために変更した。
 
-### mobility(着手位置の判定) 
+### mobility(着手位置の判定)
 8方向それぞれについて、ビットシフトを繰り返して相手の石が連続する部分を伝播させていき、blankとの論理積を取れば良い。
 無駄な関数呼び出しをなくして高速化した。
 石を置くと左に向かって相手の石をひっくり返せるような位置に関しては、

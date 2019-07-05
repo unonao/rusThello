@@ -22,6 +22,7 @@ think_depth(default: 4) -t 7
 #![allow(non_snake_case)]
 
 extern crate rusThello;
+use rusThello::book::*;
 use rusThello::color::*;
 use rusThello::command_parser::*;
 use rusThello::global::*;
@@ -274,6 +275,20 @@ fn client() {
 
 fn main() {
     init_rand_mask();
+    make_book();
+    // 全体で6bit*21手=126bit
+    // +d3-c3
+    /*
+        let mut hist: u128 = 0;
+        let mut tmp: u128 = 3;
+        tmp = (tmp << 3) + 2;
+        hist = tmp << ((59 - 39) * 6);
+        let mut tmp2: u128 = 2;
+        tmp2 = (tmp2 << 3) + 2;
+        hist = hist + (tmp2 << (58 - 39) * 6);
+        println!("hist: {}", &hist);
+        book_serch(hist, BLACK, 58);
+    */
     // クライアントとして接続
     client()
 }

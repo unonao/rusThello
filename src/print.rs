@@ -24,49 +24,56 @@ pub fn print_unilateral(flippable: &u64) {
         白と黒の片側ボード or 反転可能位置 or 着手位置 or 反転する石の位置 などを出力
     */
     let mut mask: u64 = 0x8000000000000000;
-    println!(" ABCDEFGH");
+    println!("  A B C D E F G H");
     for n in 0..8 {
         if (mask & flippable) != mask {
-            print!("{}.", n + 1)
+            print!("{} .", n + 1)
         } else {
-            print!("{}1", n + 1)
+            print!("{} 1", n + 1)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             print!(".")
         } else {
             print!("1")
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & flippable) != mask {
             println!(".")
@@ -93,50 +100,57 @@ pub fn print_board(board: &Board) {
         " Board ( 1:Black {}({}), 0:White {}({}))",
         black_num, black, white_num, white
     );
-    println!(" ABCDEFGH");
+    println!("  A B C D E F G H");
     for n in 0..8 {
         let i = 8 - n;
         if (mask & blank) == mask {
-            print!("{}.", n + 1)
+            print!("{} .", n + 1)
         } else {
-            print!("{}{:01b}", n + 1, (mask & black) >> i * 8 - 1)
+            print!("{} {:01b}", n + 1, (mask & black) >> i * 8 - 1)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 2)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 3)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 4)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 5)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 6)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
             print!("{:01b}", (mask & black) >> i * 8 - 7)
         };
+        print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             println!(".")
