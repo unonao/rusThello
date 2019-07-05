@@ -6,6 +6,10 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 //use std::env;
 use std::sync::RwLock;
+
+pub static mut MIRROR_NUM: i32 = 0;
+pub static mut HIST: u128 = 0;
+
 lazy_static! {
     pub static ref ARGS: ArgsSt = {
 
@@ -14,6 +18,7 @@ lazy_static! {
             .author(crate_authors!())       // Cargo.tomlのauthorsを参照する
             .about(crate_description!())    // Cargo.tomlのdescriptionを参照する
             .arg(Arg::from_usage("[eval] -e --eval 'eval thinker'"))
+            .arg(Arg::from_usage("[nobook] --nobook 'do not use openning book'"))
             .arg(Arg::from_usage("-h --host [HOST] 'host ip address'").default_value("127.0.0.1"))
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
@@ -50,13 +55,14 @@ lazy_static! {
                 "info".to_string()
             },
             no_solve:if matches.value_of("name").unwrap()=="random"{true}else{false},
-            eval:if matches.is_present("eval") {true} else {false}
+            eval:if matches.is_present("eval") {true} else {false},
+            book:if matches.is_present("nobook") {false} else {true},
         }
     };
 
     pub static ref BOOK :RwLock<BTreeMap<u128, f32>> = RwLock::new(BTreeMap::new()); // openning book
-    pub static ref HIST :RwLock<u128> = RwLock::new(0);
-    pub static ref ROTATE_NUM :RwLock<i32> = RwLock::new(0);
+
+
 
 
     pub static ref RAND_MASK :RwLock<[[[u64; 256];8];2]> = RwLock::new([[[0u64; 256];8];2]); // zobrist hash 用の乱数
@@ -74,6 +80,7 @@ pub struct ArgsSt {
     pub level: String,
     pub no_solve: bool,
     pub eval: bool,
+    pub book: bool,
 }
 
 pub const MAX: i32 = 1 << 30;

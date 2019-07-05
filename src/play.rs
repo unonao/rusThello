@@ -10,6 +10,7 @@ use std::time::Instant;
 use crate::color::*;
 use crate::global::*;
 //use crate::print::*;
+use crate::book::*;
 use crate::solver::*;
 use crate::think::*;
 use rand::Rng;
@@ -453,6 +454,16 @@ impl Board {
         次の手を取得
         思考ルーチンによって変更する
         */
+        let next = self.get_next_of_u64(color, count);
+        if next == 0 {
+            Move::Pass
+        } else {
+            let (x, y) = bit_to_coordinate(next);
+            Move::Mv { x: x, y: y }
+        }
+    }
+
+    fn get_next_of_u64(&self, color: i32, count: i32) -> u64 {
         let (player, opponent) = if color == BLACK {
             (self.black, self.white)
         } else {
@@ -461,34 +472,41 @@ impl Board {
 
         let mobilitys = mobility_ps(player, opponent);
 
-        let mut next: u64 = 0;
         if ARGS.eval && count >= 53 {
             // 残りマス数53までランダム(53のときに最後に打って、のこり52)
-            next = get_by_random(mobilitys);
-        } else if count > ARGS.solve_start || ARGS.no_solve {
-            next = {
-                //let args: Vec<String> = env::args().collect();
-                match ARGS.name.as_str() {
-                    "random" => get_by_random(mobilitys),
-                    "first" => get_by_first(mobilitys), // 先頭のものを取得
-                    "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
-                    "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
-                    "rusThedom" => {
-                        // randomでrandomに選ぶ
-                        let mut rng = rand::thread_rng();
-                        if rng.gen() {
-                            get_by_random(mobilitys)
-                        } else {
-                            get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
-                        }
-                    }
+            return get_by_random(mobilitys);
+        } else if mobilitys > 0 && count >= 40 && ARGS.book {
+            //残りマス数が40で次の手を探す(21手目)までやる
+            if count == 60 {
+                return coordinate_to_bit(3, 2); //d3
+            }
+            let next_by_book: u64 = get_by_book(color, count);
+            if next_by_book > 0 {
+                return next_by_book;
+            }
+        }
 
-                    _ => get_by_simple_minimax(player, opponent, mobilitys),
+        if count > ARGS.solve_start || ARGS.no_solve {
+            // random ならno_solveになる
+            return match ARGS.name.as_str() {
+                "random" => get_by_random(mobilitys),
+                "first" => get_by_first(mobilitys), // 先頭のものを取得
+                "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
+                "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
+                "rusThedom" => {
+                    // randomでrandomに選ぶ
+                    let mut rng = rand::thread_rng();
+                    if rng.gen() {
+                        get_by_random(mobilitys)
+                    } else {
+                        get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
+                    }
                 }
+                _ => get_by_simple_minimax(player, opponent, mobilitys),
             };
         } else {
             let start = Instant::now();
-            next = solve(player, opponent, count);
+            let next = solve(player, opponent, count);
             let end = start.elapsed();
             if count == ARGS.solve_start {
                 println!(
@@ -498,13 +516,7 @@ impl Board {
                     end.subsec_nanos() / 1_000_000
                 );
             }
-        }
-
-        if next == 0 {
-            Move::Pass
-        } else {
-            let (x, y) = bit_to_coordinate(next);
-            Move::Mv { x: x, y: y }
+            return next;
         }
     }
 
@@ -809,7 +821,7 @@ impl Board {
     rev |= sub_flippable_l(player, blank_a, next, 7); // 右上
     rev |= sub_flippable_l(player, blank_a, next, 9); // 左上
     rev |= sub_flippable_r(player, blank_h, next, 1); // 右
-    rev |= sub_flippable_r(player, blank_v, next, 8); // 下
+    rev |= sub_flippable_r(player, blank_v, next, 8); // ��
     rev |= sub_flippable_r(player, blank_a, next, 7); // 左下
     rev |= sub_flippable_r(player, blank_a, next, 9); // 右下
     rev
@@ -819,7 +831,7 @@ impl Board {
 
 /*
 fn sub_mobility_l(player:u64, masked:u64, blank:u64, num:u64)->u64{
-// mobility_ps() 用
+// mobility_ps() ���
 let mut tmp = masked & (player << num);
 tmp |= masked & (tmp << num);
 tmp |= masked & (tmp << num);

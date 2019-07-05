@@ -8,8 +8,9 @@ random
 
 クライアント
     cargo run -h "127.0.0.1" -p 3000 -n rusThello
-    cargo run
-verboseは --verbose, debugは --debug, infoはデフォルトで --info
+    cargo run -- --verb -e
+    cargo run -- --nobook -e
+verboseは --verb, debugは --debug, infoはデフォルトで --info
 solve_depth(default: 18) -s 23
 think_depth(default: 4) -t 7
 
@@ -66,9 +67,13 @@ fn my_move(
     color: i32,
     opponent_name: String,
     time: i32,
-    mut hist: &mut Vec<Move>,
 ) {
     let pmove: Move = board.get_next(color, count);
+    let bit: u64 = move_to_bit(&pmove);
+    if count == 60 {
+        init_mirror_num(bit)
+    }
+    insert_hist(bit, count);
     let board = board.flip_board_by_move(color, &pmove);
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
@@ -81,7 +86,6 @@ fn my_move(
         _ => count - 1,
     };
 
-    hist.push(pmove);
     output_command(&mut writer, move_send);
     match input_command(&mut reader) {
         Message::Ack { time } => op_move(
@@ -92,7 +96,6 @@ fn my_move(
             color,
             opponent_name,
             time,
-            &mut hist,
         ),
         Message::End {
             win_lose,
@@ -105,7 +108,6 @@ fn my_move(
             board,
             color,
             opponent_name,
-            &mut hist,
             win_lose,
             n,
             m,
@@ -123,13 +125,17 @@ fn op_move(
     color: i32,
     opponent_name: String,
     time: i32,
-    mut hist: &mut Vec<Move>,
 ) {
     match input_command(reader) {
         Message::Move { x, y } => {
+            let bit = coordinate_to_bit(x, y);
+            if count == 60 {
+                init_mirror_num(bit)
+            }
+            insert_hist(bit, count);
+
             let omove: Move = Move::Mv { x: x, y: y };
             let board = board.flip_board_by_move(opposite_color(color), &omove);
-            hist.push(omove);
             my_move(
                 &mut writer,
                 &mut reader,
@@ -138,22 +144,17 @@ fn op_move(
                 color,
                 opponent_name,
                 time,
-                &mut hist,
             )
         }
-        Message::Pass => {
-            hist.push(Move::Pass);
-            my_move(
-                &mut writer,
-                &mut reader,
-                board,
-                count,
-                color,
-                opponent_name,
-                time,
-                &mut hist,
-            )
-        }
+        Message::Pass => my_move(
+            &mut writer,
+            &mut reader,
+            board,
+            count,
+            color,
+            opponent_name,
+            time,
+        ),
         Message::End {
             win_lose,
             n,
@@ -165,7 +166,6 @@ fn op_move(
             board,
             color,
             opponent_name,
-            &mut hist,
             win_lose,
             n,
             m,
@@ -181,7 +181,6 @@ fn proc_end(
     board: Board,
     color: i32,
     opponent_name: String,
-    hist: &mut Vec<Move>,
     win_lose: String,
     n: i32,
     m: i32,
@@ -214,7 +213,6 @@ fn start_game(
 ) {
     let board = Board::init();
 
-    let mut hist_vec: Vec<Move> = Vec::new();
     if color == "BLACK" {
         my_move(
             &mut writer,
@@ -224,7 +222,6 @@ fn start_game(
             BLACK,
             opponent_name,
             time,
-            &mut hist_vec,
         )
     } else {
         op_move(
@@ -235,7 +232,6 @@ fn start_game(
             WHITE,
             opponent_name,
             time,
-            &mut hist_vec,
         )
     }
 }
@@ -276,19 +272,7 @@ fn client() {
 fn main() {
     init_rand_mask();
     make_book();
-    // 全体で6bit*21手=126bit
-    // +d3-c3
-    /*
-        let mut hist: u128 = 0;
-        let mut tmp: u128 = 3;
-        tmp = (tmp << 3) + 2;
-        hist = tmp << ((59 - 39) * 6);
-        let mut tmp2: u128 = 2;
-        tmp2 = (tmp2 << 3) + 2;
-        hist = hist + (tmp2 << (58 - 39) * 6);
-        println!("hist: {}", &hist);
-        book_serch(hist, BLACK, 58);
-    */
+
     // クライアントとして接続
     client()
 }
