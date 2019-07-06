@@ -126,7 +126,7 @@ pub fn book_search(color: i32, count_1: i32) -> u64 {
     }
 
     let mask: u128 = std::u128::MAX;
-    let mut hist: u128 = 0;
+    let mut hist: u128;
     unsafe {
         hist = HIST;
     }

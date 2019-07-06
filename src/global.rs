@@ -19,7 +19,8 @@ lazy_static! {
             .about(crate_description!())    // Cargo.tomlのdescriptionを参照する
             .arg(Arg::from_usage("[eval] -e --eval 'eval thinker'"))
             .arg(Arg::from_usage("[nobook] --nobook 'do not use openning book'"))
-            .arg(Arg::from_usage("-h --host [HOST] 'host ip address'").default_value("127.0.0.1"))
+            .arg(Arg::from_usage("[mktrain] --mktrain 'make train data'"))
+            .arg(Arg::from_usage("-H --host [HOST] 'host ip address'").default_value("127.0.0.1"))
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
             .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("12"))
@@ -57,6 +58,7 @@ lazy_static! {
             no_solve:if matches.value_of("name").unwrap()=="random"{true}else{false},
             eval:if matches.is_present("eval") {true} else {false},
             book:if matches.is_present("nobook") {false} else {true},
+            mktrain:if matches.is_present("mktrain") {true} else {false},
         }
     };
 
@@ -81,6 +83,7 @@ pub struct ArgsSt {
     pub no_solve: bool,
     pub eval: bool,
     pub book: bool,
+    pub mktrain: bool,
 }
 
 pub const MAX: i32 = 1 << 30;

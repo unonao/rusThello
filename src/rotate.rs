@@ -37,7 +37,6 @@ pub fn mirrorHorizontal(x: &u64) -> u64 {
 }
 
 pub fn flipDiagA1H8(x: &u64) -> u64 {
-    let mut t: u64 = 0;
     let k1: u64 = 0x5500550055005500;
     let k2: u64 = 0x3333000033330000;
     let k4: u64 = 0x0f0f0f0f00000000;

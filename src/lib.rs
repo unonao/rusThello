@@ -12,6 +12,7 @@ pub mod command_parser;
 pub mod eval;
 pub mod global;
 pub mod hash;
+pub mod make_train_data;
 pub mod play;
 pub mod print;
 pub mod rotate;

@@ -393,6 +393,27 @@ impl Board {
             return Board::new(self.black, self.white);
         }
     }
+    pub fn flip_board_by_bit(&self, color: i32, next: u64) -> Board {
+        /*
+        input: board, 打ち手の色, 次の手
+        output: flipしたあとのboard
+        */
+        let (player, opponent) = if color == BLACK {
+            (self.black, self.white)
+        } else {
+            (self.white, self.black)
+        };
+        if next > 0 {
+            let rev = flippable_stones(player, opponent, next);
+            if color == BLACK {
+                return Board::new(self.black ^ (rev ^ next), self.white ^ rev);
+            } else {
+                return Board::new(self.black ^ rev, self.white ^ (rev ^ next));
+            }
+        } else {
+            return Board::new(self.black, self.white);
+        }
+    }
     pub fn get_next(&self, color: i32, count: i32) -> Move {
         /*
         次の手を取得

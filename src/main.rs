@@ -7,7 +7,7 @@ random
 
 
 クライアント
-    cargo run -h "127.0.0.1" -p 3000 -n rusThello
+    cargo run -H "127.0.0.1" -p 3000 -n rusThello
     cargo run -- --verb -e
     cargo run -- --nobook -e
 verboseは --verb, debugは --debug, infoはデフォルトで --info
@@ -28,6 +28,7 @@ use rusThello::color::*;
 use rusThello::command_parser::*;
 use rusThello::global::*;
 use rusThello::hash::*;
+use rusThello::make_train_data::*;
 use rusThello::play::*;
 use rusThello::print::*;
 
@@ -270,9 +271,16 @@ fn client() {
 }
 
 fn main() {
-    init_rand_mask();
-    make_book();
+    if ARGS.mktrain {
+        match make_train_data() {
+            Ok(_n) => println!("ok!"),
+            Err(_n) => println!("err!"),
+        };
+    } else {
+        init_rand_mask();
+        make_book();
 
-    // クライアントとして接続
-    client()
+        // クライアントとして接続
+        client()
+    }
 }

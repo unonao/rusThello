@@ -30,7 +30,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ## 使い方
 (rusThelloディレクトリで以下のコマンドを使用する)
 ```
-cargo run -h "127.0.0.1" -p 3000 -n rusThello
+cargo run -H "127.0.0.1" -p 3000 -n rusThello
 ```
 
 または

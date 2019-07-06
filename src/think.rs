@@ -80,7 +80,6 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u
     }
 }
 
-// 未完
 fn alpha_beta(
     player: u64,
     opponent: u64,
