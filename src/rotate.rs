@@ -17,7 +17,7 @@ pub fn rotate180(x: &u64) -> u64 {
     return x;
 }
 
-pub fn flipVertical(x: &u64) -> u64 {
+pub fn flip_vertical(x: &u64) -> u64 {
     let k1: u64 = 0x00FF00FF00FF00FF as u64;
     let k2: u64 = 0x0000FFFF0000FFFF as u64;
     let x: u64 = ((x >> 8) & k1) | ((x & k1) << 8);
@@ -26,7 +26,7 @@ pub fn flipVertical(x: &u64) -> u64 {
     return x;
 }
 
-pub fn mirrorHorizontal(x: &u64) -> u64 {
+pub fn mirror_horizontal(x: &u64) -> u64 {
     let k1: u64 = 0x5555555555555555;
     let k2: u64 = 0x3333333333333333;
     let k4: u64 = 0x0f0f0f0f0f0f0f0f;
@@ -36,7 +36,7 @@ pub fn mirrorHorizontal(x: &u64) -> u64 {
     return x;
 }
 
-pub fn flipDiagA1H8(x: &u64) -> u64 {
+pub fn flip_diag_a1h8(x: &u64) -> u64 {
     let k1: u64 = 0x5500550055005500;
     let k2: u64 = 0x3333000033330000;
     let k4: u64 = 0x0f0f0f0f00000000;
@@ -49,9 +49,9 @@ pub fn flipDiagA1H8(x: &u64) -> u64 {
     return x;
 }
 
-pub fn rotate90antiClockwise(x: &u64) -> u64 {
-    return flipVertical(&flipDiagA1H8(x));
+pub fn rotate90_anti_clockwise(x: &u64) -> u64 {
+    return flip_vertical(&flip_diag_a1h8(x));
 }
-pub fn rotate90clockwise(x: &u64) -> u64 {
-    return flipDiagA1H8(&flipVertical(x));
+pub fn rotate90_clockwise(x: &u64) -> u64 {
+    return flip_diag_a1h8(&flip_vertical(x));
 }

@@ -4,8 +4,12 @@ extern crate rand;
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
-extern crate rusty_machine as rm;
 
+/*
+extern crate rusty_machine as rm;
+extern crate serde;
+extern crate serde_json;
+*/
 pub mod book;
 pub mod color;
 pub mod command_parser;
@@ -18,6 +22,7 @@ pub mod print;
 pub mod rotate;
 pub mod solver;
 pub mod think;
+pub mod train;
 
 // cargo test -- --nocapture
 #[cfg(test)]
@@ -28,46 +33,100 @@ mod tests {
     use crate::print::*;
     use crate::rotate::*;
     use crate::solver::*;
-    use rm::learning::nnet::{BCECriterion, NeuralNet};
+    use crate::train::*;
+    use rm::learning::nnet::MSECriterion;
+
+    use rm::learning::nnet::NeuralNet;
     use rm::learning::optim::grad_desc::StochasticGD;
     use rm::learning::toolkit::regularization::Regularization;
     use rm::learning::SupModel;
     use rm::linalg::Matrix;
+    use serde::{Deserialize, Serialize};
+    use std::fs::File;
+    use std::io::{BufWriter, Write};
     #[test]
     fn it_works() {
-        let inputs = Matrix::new(
-            5,
-            3,
-            vec![1., 1., 1., 2., 2., 2., 3., 3., 3., 4., 4., 4., 5., 5., 5.],
+        /**/
+        /*
+        let next: u64 = 4048832882159910912;
+        let pre: u64 = 18049789443178496;
+        let mut train = Vec::new();
+        board_to_bitvec(&mut train, next, pre);
+
+        let def: f64 = 5.0;
+        let mobility: f64 = 10.0;
+        train.push(def);
+        train.push(mobility);
+
+        board_to_bitvec(&mut train, flip_diag_a1h8(&next), flip_diag_a1h8(&pre));
+        train.push(def);
+        train.push(mobility);
+
+        board_to_bitvec(
+            &mut train,
+            rotate180(&flip_diag_a1h8(&next)),
+            rotate180(&flip_diag_a1h8(&pre)),
         );
+        train.push(def);
+        train.push(mobility);
+
+        board_to_bitvec(&mut train, rotate180(&next), rotate180(&pre));
+        train.push(def);
+        train.push(mobility);
+
+        let result_in_next_view: f64 = 4.0;
+
+        let inputs = Matrix::new(4, 130, train);
         let targets = Matrix::new(
-            5,
-            3,
-            vec![1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 0., 1., 0., 0., 1.],
+            4,
+            1,
+            vec![
+                result_in_next_view,
+                result_in_next_view,
+                result_in_next_view,
+                result_in_next_view,
+            ],
         );
 
         // Set the layer sizes - from input to output
-        let layers = &[3, 5, 11, 7, 3];
+        let layers = &[130, 80, 10, 1]; // 1秒で2回
 
-        // Choose the BCE criterion with L2 regularization (`lambda=0.1`).
-        let criterion = BCECriterion::new(Regularization::L2(0.1));
+        let criterion = MSECriterion::new(Regularization::L2(0.3f64));
 
         // We will just use the default stochastic gradient descent.
+        #[derive(Serialize, Deserialize)]
         let mut model = NeuralNet::new(layers, criterion, StochasticGD::default());
-
+        println!("train");
         // Train the model!
         model.train(&inputs, &targets).unwrap();
+        println!("train end");
 
-        let test_inputs = Matrix::new(2, 3, vec![1.5, 1.5, 1.5, 5.1, 5.1, 5.1]);
+        let next: u64 = 4048832882159910912;
+        let pre: u64 = 18049789443178496;
+        let mut train = Vec::new();
+        board_to_bitvec(&mut train, next, pre);
+
+        let def: f64 = 5.0;
+        let mobility: f64 = 10.0;
+        train.push(def);
+        train.push(mobility);
+        let test_inputs = Matrix::new(1, 130, train);
 
         // And predict new output from the test inputs
         let outputs = model.predict(&test_inputs).unwrap();
         println!("{}", outputs);
+        for i in 0..20 {
+            model.train(&inputs, &targets).unwrap();
+            println!("{}", i);
+        }
 
-        model.train(&inputs, &targets).unwrap();
         let outputs = model.predict(&test_inputs).unwrap();
         println!("{}", outputs);
-        /*
+
+        let json_str = serde_json::to_string(&model).unwrap();
+        let f = File::create("model/test_model.txt").unwrap();
+        write!(f, "{}", json_str);
+
 
         println!("point: {}", sub_simple_eval(board.black));
 

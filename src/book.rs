@@ -35,8 +35,8 @@ pub fn init_mirror_num(first: u64) {
         HIST = 0;
     }
     let d3: u64 = 0x0000100000000000;
-    let c4: u64 = flipDiagA1H8(&d3);
-    let f5: u64 = rotate180(&flipDiagA1H8(&d3));
+    let c4: u64 = flip_diag_a1h8(&d3);
+    let f5: u64 = rotate180(&flip_diag_a1h8(&d3));
     let e6: u64 = rotate180(&d3);
 
     if first == d3 {
@@ -71,9 +71,9 @@ pub fn insert_hist(next: u64, count_1: i32) {
             if MIRROR_NUM == 0 {
                 next_mirror = next;
             } else if MIRROR_NUM == 1 {
-                next_mirror = flipDiagA1H8(&next);
+                next_mirror = flip_diag_a1h8(&next);
             } else if MIRROR_NUM == 2 {
-                next_mirror = rotate180(&flipDiagA1H8(&next));
+                next_mirror = rotate180(&flip_diag_a1h8(&next));
             } else if MIRROR_NUM == 3 {
                 next_mirror = rotate180(&next);;
             }
@@ -103,9 +103,9 @@ pub fn get_by_book(color: i32, count: i32) -> u64 {
         if MIRROR_NUM == 0 {
             next
         } else if MIRROR_NUM == 1 {
-            flipDiagA1H8(&next)
+            flip_diag_a1h8(&next)
         } else if MIRROR_NUM == 2 {
-            rotate180(&flipDiagA1H8(&next))
+            rotate180(&flip_diag_a1h8(&next))
         } else if MIRROR_NUM == 3 {
             rotate180(&next)
         } else {
