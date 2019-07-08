@@ -440,7 +440,7 @@ impl Board {
         if ARGS.eval && count >= 53 {
             // 残りマス数53までランダム(53のときに最後に打って、のこり52)
             return get_by_random(mobilitys);
-        } else if mobilitys > 0 && count >= 40 && ARGS.book {
+        } else if mobilitys > 0 && count >= 40 && ARGS.book && !ARGS.random {
             //残りマス数が40で次の手を探す(21手目)までやる
             if count == 60 {
                 return coordinate_to_bit(3, 2); //d3
@@ -451,12 +451,12 @@ impl Board {
             }
         }
 
-        if count > ARGS.solve_start || ARGS.no_solve {
+        if count > ARGS.solve_start || ARGS.random {
             // random ならno_solveになる
             return match ARGS.name.as_str() {
                 "random" => get_by_random(mobilitys),
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
-                "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
+                "evalTest" => get_by_model(player, opponent, mobilitys, count), // simple_minimax
                 "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                 "rusThedom" => {
                     // randomでrandomに選ぶ

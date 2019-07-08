@@ -1,6 +1,9 @@
 extern crate nom;
 extern crate rand;
 #[macro_use]
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
@@ -14,6 +17,7 @@ pub mod book;
 pub mod color;
 pub mod command_parser;
 pub mod eval;
+pub mod eval_fun;
 pub mod global;
 pub mod hash;
 pub mod make_train_data;

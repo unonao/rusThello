@@ -1,9 +1,10 @@
 /*
     評価関数
 */
+use crate::eval_fun::*;
 use crate::global::*;
 
-pub fn board_eval(me: u64, op: u64) -> i32 {
+pub fn board_eval(me: u64, op: u64, count: i32) -> i32 {
     match ARGS.name.as_str() {
         "evalTest" => eval3(me, op),
         "rusThello" => second_eval(me, op),

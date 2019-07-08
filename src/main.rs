@@ -16,7 +16,7 @@ think_depth(default: 4) -t 7
 
 
 最強
-    cargo run --release -- -h "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
+    cargo run --release -- -H "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
 
 */
 
@@ -31,6 +31,7 @@ use rusThello::hash::*;
 use rusThello::make_train_data::*;
 use rusThello::play::*;
 use rusThello::print::*;
+use rusThello::train::*;
 
 // サーバ接続
 use std::io::{BufRead, BufReader};
@@ -276,6 +277,8 @@ fn main() {
             Ok(_n) => println!("ok!"),
             Err(_n) => println!("err!"),
         };
+    } else if ARGS.dotrain {
+        train()
     } else {
         init_rand_mask();
         make_book();
