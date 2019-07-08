@@ -88,7 +88,7 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
     } else {
         let mut next: u64 = 1;
         let mut mask: u64 = 0x8000000000000000;
-        let mut best = MIN;
+        let mut best = std::f32::MIN;
         while mask > 0 {
             if (mask & mobilitys) > 0 {
                 let (next_player, next_opponent) = flip_board(player, opponent, mask);
@@ -100,9 +100,9 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
                     false,
                     next_mobilitys,
                     ARGS.think_depth,
-                    MIN,
-                    MAX,
-                    count,
+                    std::f32::MIN,
+                    std::f32::MAX,
+                    count - 1,
                 );
                 if best < val {
                     best = val;
@@ -121,13 +121,13 @@ fn model_alpha_beta(
     is_player: bool,
     mobilitys: u64,
     depth: i32,
-    alpha: i32,
-    beta: i32,
+    alpha: f32,
+    beta: f32,
     count: i32,
-) -> i32 {
+) -> f32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval(player, opponent, count);
+        return board_eval_by_model(player, opponent, count, is_player);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -136,9 +136,9 @@ fn model_alpha_beta(
             // passのとき
             if is_finished(player, opponent) {
                 if is_win(player, opponent) {
-                    return MAX;
+                    return std::f32::MAX;
                 } else {
-                    return MIN;
+                    return std::f32::MIN;
                 }
             } else {
                 let next_mobilitys = mobility_ps(opponent, player);
@@ -154,24 +154,24 @@ fn model_alpha_beta(
                 );
             }
         } else {
-            let mut alp: i32 = alpha;
+            let mut alp: f32 = alpha;
             while mask > 0 {
                 if (mask & mobilitys) > 0 {
                     let (next_player, next_opponent) = flip_board(player, opponent, mask);
                     let next_mobilitys = mobility_ps(next_opponent, next_player);
-                    alp = std::cmp::max(
+                    let tmp = model_alpha_beta(
+                        next_player,
+                        next_opponent,
+                        false,
+                        next_mobilitys,
+                        depth - 1,
                         alp,
-                        model_alpha_beta(
-                            next_player,
-                            next_opponent,
-                            false,
-                            next_mobilitys,
-                            depth - 1,
-                            alp,
-                            beta,
-                            count - 1,
-                        ),
+                        beta,
+                        count - 1,
                     );
+                    if tmp > alp {
+                        alp = tmp
+                    }
                     if beta <= alp {
                         break;
                     }
@@ -185,9 +185,9 @@ fn model_alpha_beta(
             // passのとき
             if is_finished(player, opponent) {
                 if is_win(player, opponent) {
-                    return MAX;
+                    return std::f32::MAX;
                 } else {
-                    return MIN;
+                    return std::f32::MIN;
                 }
             } else {
                 let next_mobilitys = mobility_ps(player, opponent);
@@ -203,24 +203,24 @@ fn model_alpha_beta(
                 );
             }
         } else {
-            let mut be: i32 = beta;
+            let mut be: f32 = beta;
             while mask > 0 {
                 if (mask & mobilitys) > 0 {
                     let (next_opponent, next_player) = flip_board(opponent, player, mask);
                     let next_mobilitys = mobility_ps(next_player, next_opponent);
-                    be = std::cmp::min(
+                    let tmp = model_alpha_beta(
+                        next_player,
+                        next_opponent,
+                        true,
+                        next_mobilitys,
+                        depth - 1,
+                        alpha,
                         be,
-                        model_alpha_beta(
-                            next_player,
-                            next_opponent,
-                            true,
-                            next_mobilitys,
-                            depth - 1,
-                            alpha,
-                            be,
-                            count - 1,
-                        ),
+                        count - 1,
                     );
+                    if tmp < be {
+                        be = tmp
+                    };
                     if be <= alpha {
                         break;
                     }

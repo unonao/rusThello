@@ -3,16 +3,28 @@
 */
 use crate::eval_fun::*;
 use crate::global::*;
+use crate::play::*;
 
-pub fn board_eval(me: u64, op: u64, count: i32) -> i32 {
+pub fn board_eval(me: u64, op: u64, _count: i32) -> i32 {
     match ARGS.name.as_str() {
-        "evalTest" => eval3(me, op),
         "rusThello" => second_eval(me, op),
         _ => second_eval(me, op),
     }
 }
+pub fn board_eval_by_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
+    let stage = (60 - count - 1) / 5;
+    if is_player {
+        let def = stone_def(me, op) as f32;
+        let next_mobilitys_num = mobility_ps(me, op) as f32;
+        return eval_by_model(&me, &op, &def, &next_mobilitys_num, &MODEL[stage as usize]);
+    } else {
+        let def = stone_def(op, me) as f32;
+        let next_mobilitys_num = mobility_ps(op, me) as f32;
+        return -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize]);
+    }
+}
 
-pub fn eval3(me: u64, op: u64) -> i32 {
+pub fn eval_use_model(me: u64, op: u64) -> i32 {
     let blank = !(me | op);
     let me_num: i32 = me.count_ones() as i32;
     let op_num: i32 = op.count_ones() as i32;

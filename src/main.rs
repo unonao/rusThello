@@ -7,7 +7,9 @@ random
 
 
 クライアント
-    cargo run -H "127.0.0.1" -p 3000 -n rusThello
+    cargo run -- -H "127.0.0.1" -p 3000 -n rusThello
+    cargo run -- -H "127.0.0.1" -p 3000 -n evalTest
+    cargo run -- -H "127.0.0.1" -p 3000 -n random
     cargo run -- --verb -e
     cargo run -- --nobook -e
 verboseは --verb, debugは --debug, infoはデフォルトで --info

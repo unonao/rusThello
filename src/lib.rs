@@ -2,6 +2,7 @@ extern crate nom;
 extern crate rand;
 #[macro_use]
 extern crate serde;
+extern crate flate2;
 extern crate serde_json;
 #[macro_use]
 extern crate clap;

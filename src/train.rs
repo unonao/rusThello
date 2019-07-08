@@ -5,7 +5,8 @@
 */
 use crate::eval_fun::*;
 use crate::rotate::*;
-use std::cmp;
+use flate2::write::ZlibEncoder;
+use flate2::Compression;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io::{BufWriter, Write};
@@ -29,7 +30,7 @@ pub fn make_init_index() -> Index {
 }
 
 pub fn train() {
-    for stage in 1..15 {
+    for stage in 1..13 {
         // 10のステージ
         let mut index = make_init_index();
         println!("start stage{}", stage);
@@ -40,10 +41,10 @@ pub fn train() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..40 {
+    for iter in 0..10 {
         let mut d_all = make_init_index();
         let mut count = make_init_index();
-        for file_count in 1..5 {
+        for file_count in 1..6 {
             // for all i
             // 1ステージ6ファイル
 
@@ -77,18 +78,27 @@ fn make_model(stage: &i32, mut index: &mut Index) {
             }
         } // end for all i
         println!("iter :{}", iter);
-        update_index(&mut d_all, &mut index, &mut count);
+        if update_index(&mut d_all, &mut index, &mut count) {
+            break;
+        }
     }
     match serde_json::to_string(&index) {
-        Ok(json_str) => {
+        Ok(json_string) => {
             let mut f = BufWriter::new(File::create(format!("model/stage{}.txt", stage)).unwrap());
-            write!(f, "{}", json_str);
+            let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
+            let json_str: &str = &json_string;
+            let mut file =
+                BufWriter::new(File::create(format!("model_tmp/stage{}.txt", stage)).unwrap());
+            write!(file, "{}", json_str);
+            e.write_all(json_str.as_bytes()).unwrap();
+            let compressed_bytes = e.finish().unwrap();
+            f.write(&compressed_bytes).unwrap();
         }
         Err(error) => println!("error: {}", error),
     }
 }
 
-fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
+fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) -> bool {
     let beta = 0.002;
     let tmp1 = beta / 50.0;
 
@@ -156,6 +166,13 @@ fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
     let alpha = beta / 110000.0;
     index.def += alpha * d_all.def;
     index.next_mobility_num += alpha * d_all.next_mobility_num;
+
+    let max = d_all.cor33.iter().fold(0.0 / 0.0, |m, v| v.max(m));
+    if max < 0.01 {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 fn update_d_all(
@@ -166,7 +183,7 @@ fn update_d_all(
     result: &f32,
     mut index: &mut Index,
     mut d_all: &mut Index,
-    mut count: &mut Index,
+    count: &mut Index,
 ) {
     let e = result - eval_by_model(next_ori, pre_ori, def, next_mobility_num, &mut index);
 

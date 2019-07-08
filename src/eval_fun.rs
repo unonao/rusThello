@@ -1,6 +1,7 @@
 use crate::rotate::*;
-use std::fs;
+use flate2::read::ZlibDecoder;
 use std::fs::File;
+use std::io::prelude::*;
 lazy_static! {
     pub static ref THREE: Vec<i32> = vec![
         1,
@@ -16,9 +17,14 @@ lazy_static! {
     ];
     pub static ref MODEL: Vec<Index> = {
         let mut model = Vec::new();
-        for stage in 0..15 {
-            let content = fs::read_to_string(format!("./model/stage{}.txt", stage)).unwrap();
-            let deserialized: Index = serde_json::from_str(&content).unwrap();
+        for stage in 1..13 {
+            let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
+            let mut buf = Vec::new();
+            let _ = file.read_to_end(&mut buf).unwrap();
+            let mut z = ZlibDecoder::new(&buf[..]);
+            let mut s = String::new();
+            z.read_to_string(&mut s).unwrap();
+            let deserialized: Index = serde_json::from_str(&s).unwrap();
             model.push(deserialized);
         }
         model
@@ -48,7 +54,7 @@ pub fn eval_by_model(
     pre_ori: &u64,
     def: &f32,
     next_mobility_num: &f32,
-    mut index: &mut Index,
+    index: &Index,
 ) -> f32 {
     let mut result = 0.0;
 

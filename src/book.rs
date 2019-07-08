@@ -126,7 +126,7 @@ pub fn book_search(color: i32, count_1: i32) -> u64 {
     }
 
     let mask: u128 = std::u128::MAX;
-    let mut hist: u128;
+    let hist: u128;
     unsafe {
         hist = HIST;
     }
@@ -145,14 +145,14 @@ pub fn book_search(color: i32, count_1: i32) -> u64 {
             }
         }
         if max_key == 0 {
-            println!("no hit");
+            //println!("no hit");
             return 0;
         } else {
             let next = (max_key << ((60 - count - 1) * 6 + 2)) >> 122; // 必要な6bitを左に詰めてから、右に寄せる
             let x: i32 = (next >> 3) as i32;
             let y: i32 = (next & 0b111) as i32;
             println!("{}: {}", max_key, max_val);
-            println!("next, x:{}, y:{}", x, y);
+            println!("hit! next, x:{}, y:{}", x, y);
             let bit = coordinate_to_bit(x, y);
             /*
             let m = bit_to_move(bit);
@@ -171,14 +171,14 @@ pub fn book_search(color: i32, count_1: i32) -> u64 {
             }
         }
         if min_key == 0 {
-            println!("no hit");
+            //println!("no hit");
             return 0;
         } else {
             let next = (min_key << ((60 - count - 1) * 6 + 2)) >> 122; // 必要な6bitを左に詰めてから、右に寄せる
             let x: i32 = (next >> 3) as i32;
             let y: i32 = (next & 0b111) as i32;
-            println!("{}: {}", min_key, min_val);
-            println!("next, x:{}, y:{}", x, y);
+            //println!("{}: {}", min_key, min_val);
+            println!("hit! next, x:{}, y:{}", x, y);
             let bit = coordinate_to_bit(x, y);
             /*
             let m = bit_to_move(bit);
