@@ -4,6 +4,7 @@
 
 */
 use crate::eval_fun::*;
+use crate::global::*;
 use crate::rotate::*;
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
@@ -42,8 +43,8 @@ pub fn train() {
     }
 }
 pub fn train_continue() {
-    //cargo run --release -- --cntntrain
-    for stage in 2..6 {
+    //cargo run --release -- --cntntrain -S 12 -E 13 --beta 0.001
+    for stage in ARGS.sttrain..ARGS.endtrain {
         let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
         let mut buf = Vec::new();
         let _ = file.read_to_end(&mut buf).unwrap();
@@ -59,7 +60,7 @@ pub fn train_continue() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..500 {
+    for iter in 0..100 {
         let mut d_all = make_init_index();
         let mut count = make_init_index();
         let mut sum_e = 0.0;
@@ -123,7 +124,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
 }
 
 fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
-    let beta = 0.0004;
+    let beta = ARGS.beta;
     let tmp1 = beta / 50.0;
 
     for i in 0..(3 * 3 * 3 * 3) {

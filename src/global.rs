@@ -26,6 +26,9 @@ lazy_static! {
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
             .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("12"))
+            .arg(Arg::from_usage("-S --sttrain [STTRAIN] 'start train'").default_value("2"))
+            .arg(Arg::from_usage("-E --endtrain [ENDTRAIN] 'end train'").default_value("13"))
+            .arg(Arg::from_usage("-B --beta [BETA] 'train beta'").default_value("0.0004"))
             .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("3"))
             .args_from_usage("--verb 'verbose mode: level group'
                                 --debug 'debug mode: level group'
@@ -63,6 +66,9 @@ lazy_static! {
             mktrain:if matches.is_present("mktrain") {true} else {false},
             dotrain:if matches.is_present("dotrain") {true} else {false},
             cntntrain:if matches.is_present("cntntrain") {true} else {false},
+            sttrain:matches.value_of("sttrain").unwrap().parse().unwrap(),
+            endtrain:matches.value_of("endtrain").unwrap().parse().unwrap(),
+            beta:matches.value_of("beta").unwrap().parse().unwrap(),
         }
     };
 
@@ -90,6 +96,9 @@ pub struct ArgsSt {
     pub mktrain: bool,
     pub dotrain: bool,
     pub cntntrain: bool,
+    pub endtrain: i32,
+    pub sttrain: i32,
+    pub beta: f32,
 }
 
 pub const MAX: i32 = 1 << 30;
