@@ -24,6 +24,7 @@ lazy_static! {
             let mut z = ZlibDecoder::new(&buf[..]);
             let mut s = String::new();
             z.read_to_string(&mut s).unwrap();
+            //println!("stage{}:{}", stage, s);
             let deserialized: Index = serde_json::from_str(&s).unwrap();
             model.push(deserialized);
         }
@@ -89,6 +90,7 @@ pub fn eval_by_model(
         + index.cor25h[board_to_cor25h(&next, &pre) as usize]
         + index.cor25v[board_to_cor25v(&next, &pre) as usize]
         + index.cor33[board_to_cor33(&next, &pre) as usize];
+
     let next: u64 = rotate180(&flip_diag_a1h8(next_ori));
     let pre: u64 = rotate180(&flip_diag_a1h8(pre_ori));
 

@@ -21,6 +21,7 @@ lazy_static! {
             .arg(Arg::from_usage("[nobook] --nobook 'do not use openning book'"))
             .arg(Arg::from_usage("[mktrain] --mktrain 'make train data'"))
             .arg(Arg::from_usage("[dotrain] --dotrain 'do train'"))
+            .arg(Arg::from_usage("[cntntrain] --cntntrain 'continue train'"))
             .arg(Arg::from_usage("-H --host [HOST] 'host ip address'").default_value("127.0.0.1"))
             .arg(Arg::from_usage("-p --port [PORT] 'port number'").default_value("3000"))
             .arg(Arg::from_usage("-n --name [NAME] 'player name'").default_value("rusThello"))
@@ -61,6 +62,7 @@ lazy_static! {
             book:if matches.is_present("nobook") {false} else {true},
             mktrain:if matches.is_present("mktrain") {true} else {false},
             dotrain:if matches.is_present("dotrain") {true} else {false},
+            cntntrain:if matches.is_present("cntntrain") {true} else {false},
         }
     };
 
@@ -87,6 +89,7 @@ pub struct ArgsSt {
     pub book: bool,
     pub mktrain: bool,
     pub dotrain: bool,
+    pub cntntrain: bool,
 }
 
 pub const MAX: i32 = 1 << 30;
@@ -96,4 +99,4 @@ pub const SOLVE_SORT_END: i32 = 5;
 pub const HASH_DEPTH: i32 = 0;
 
 // for think
-pub const THINE_DEPTH: i32 = 2;
+//pub const THINK_DEPTH: i32 = 2;

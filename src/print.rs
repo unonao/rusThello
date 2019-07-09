@@ -106,56 +106,56 @@ pub fn print_board(board: &Board) {
         if (mask & blank) == mask {
             print!("{} .", n + 1)
         } else {
-            print!("{} {:01b}", n + 1, (mask & black) >> i * 8 - 1)
+            print!("{} {:01b}", n + 1, (mask & white) >> i * 8 - 1)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 2)
+            print!("{:01b}", (mask & white) >> i * 8 - 2)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 3)
+            print!("{:01b}", (mask & white) >> i * 8 - 3)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 4)
+            print!("{:01b}", (mask & white) >> i * 8 - 4)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 5)
+            print!("{:01b}", (mask & white) >> i * 8 - 5)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 6)
+            print!("{:01b}", (mask & white) >> i * 8 - 6)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             print!(".")
         } else {
-            print!("{:01b}", (mask & black) >> i * 8 - 7)
+            print!("{:01b}", (mask & white) >> i * 8 - 7)
         };
         print!(" ");
         mask = mask >> 1;
         if (mask & blank) == mask {
             println!(".")
         } else {
-            println!("{:01b}", (mask & black) >> i * 8 - 8)
+            println!("{:01b}", (mask & white) >> i * 8 - 8)
         };
         mask = mask >> 1;
     }

@@ -94,7 +94,7 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
                 let (next_player, next_opponent) = flip_board(player, opponent, mask);
                 let next_mobilitys = mobility_ps(next_opponent, next_player);
 
-                let val = model_alpha_beta(
+                let val: f32 = model_alpha_beta(
                     next_player,
                     next_opponent,
                     false,
@@ -111,6 +111,7 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
             }
             mask = mask >> 1;
         }
+        println!("count:{}, best:{}", count, best);
         return next;
     }
 }

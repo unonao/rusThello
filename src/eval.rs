@@ -13,13 +13,27 @@ pub fn board_eval(me: u64, op: u64, _count: i32) -> i32 {
 }
 pub fn board_eval_by_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
     let stage = (60 - count - 1) / 5;
+    //let next_stage = (60 - count) / 5;
+    //let pre_stage = (60 - count - 2) / 5;
     if is_player {
         let def = stone_def(me, op) as f32;
-        let next_mobilitys_num = mobility_ps(me, op) as f32;
+        let next_mobilitys_num = mobility_ps(me, op).count_ones() as f32;
+        /*
+        println!(
+            "eval val:{}",
+            eval_by_model(&me, &op, &def, &next_mobilitys_num, &MODEL[stage as usize])
+        );
+        */
         return eval_by_model(&me, &op, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     } else {
         let def = stone_def(op, me) as f32;
-        let next_mobilitys_num = mobility_ps(op, me) as f32;
+        let next_mobilitys_num = mobility_ps(op, me).count_ones() as f32;
+        /*
+        println!(
+            "eval val:{}",
+            -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize])
+        );
+        */
         return -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     }
 }

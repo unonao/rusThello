@@ -5,9 +5,11 @@
 */
 use crate::eval_fun::*;
 use crate::rotate::*;
+use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use flate2::Compression;
 use std::fs::File;
+use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
 use std::io::{BufWriter, Write};
 pub fn make_init_index() -> Index {
@@ -30,9 +32,25 @@ pub fn make_init_index() -> Index {
 }
 
 pub fn train() {
-    for stage in 1..13 {
-        // 10のステージ
+    for stage in 3..13 {
+        // 12のステージ
         let mut index = make_init_index();
+        println!("start stage{}", stage);
+        make_model(&stage, &mut index);
+        //save_index(index, stage);
+        println!("saved stage{}", stage);
+    }
+}
+pub fn train_continue() {
+    //cargo run --release -- --cntntrain
+    for stage in 12..13 {
+        let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
+        let mut buf = Vec::new();
+        let _ = file.read_to_end(&mut buf).unwrap();
+        let mut z = ZlibDecoder::new(&buf[..]);
+        let mut s = String::new();
+        z.read_to_string(&mut s).unwrap();
+        let mut index: Index = serde_json::from_str(&s).unwrap();
         println!("start stage{}", stage);
         make_model(&stage, &mut index);
         //save_index(index, stage);
@@ -41,12 +59,14 @@ pub fn train() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..10 {
+    for iter in 0..50 {
         let mut d_all = make_init_index();
         let mut count = make_init_index();
+        let mut sum_e = 0.0;
+        let mut data_count = 0.0;
         for file_count in 1..6 {
             // for all i
-            // 1ステージ6ファイル
+            // 1ステージ5ファイル
 
             for result in BufReader::new(
                 File::open(format!("./train/train{}.txt", file_count * stage - 1)).unwrap(),
@@ -55,6 +75,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
             {
                 match result {
                     Ok(n) => {
+                        data_count += 1.0;
                         let mut iter = n.split_whitespace();
                         let next: u64 = iter.next().unwrap().parse().unwrap();
                         let pre: u64 = iter.next().unwrap().parse().unwrap();
@@ -62,7 +83,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
                         let next_mobility_num: f32 = iter.next().unwrap().parse().unwrap();
                         let result: f32 = iter.next().unwrap().parse().unwrap();
 
-                        update_d_all(
+                        sum_e += update_d_all(
                             &next,
                             &pre,
                             &def,
@@ -77,10 +98,13 @@ fn make_model(stage: &i32, mut index: &mut Index) {
                 }
             }
         } // end for all i
-        println!("iter :{}", iter);
-        if update_index(&mut d_all, &mut index, &mut count) {
+        let e = sum_e / data_count;
+        println!("iter :{}, e:{}", iter, e);
+
+        update_index(&mut d_all, &mut index, &mut count);
+        if e < 2.0 {
             break;
-        }
+        };
     }
     match serde_json::to_string(&index) {
         Ok(json_string) => {
@@ -88,7 +112,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
             let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
             let json_str: &str = &json_string;
             let mut file =
-                BufWriter::new(File::create(format!("model_tmp/stage{}.txt", stage)).unwrap());
+                BufWriter::new(File::create(format!("model_raw/stage{}.txt", stage)).unwrap());
             write!(file, "{}", json_str);
             e.write_all(json_str.as_bytes()).unwrap();
             let compressed_bytes = e.finish().unwrap();
@@ -98,81 +122,86 @@ fn make_model(stage: &i32, mut index: &mut Index) {
     }
 }
 
-fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) -> bool {
-    let beta = 0.002;
+fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
+    let beta = 0.0004;
     let tmp1 = beta / 50.0;
 
     for i in 0..(3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag4[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.diag4[i] += alpha * d_all.diag4[i];
+        let tmp = alpha * d_all.diag4[i];
+        index.diag4[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag5[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.diag5[i] += alpha * d_all.diag5[i];
+        let tmp = alpha * d_all.diag5[i];
+        index.diag5[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag6[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.diag6[i] += alpha * d_all.diag6[i];
+        let tmp = alpha * d_all.diag6[i];
+        index.diag6[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag7[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.diag7[i] += alpha * d_all.diag7[i];
+        let tmp = alpha * d_all.diag7[i];
+        index.diag7[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag8[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.diag8[i] += alpha * d_all.diag8[i];
+        let tmp = alpha * d_all.diag8[i];
+        index.diag8[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.hv2[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.hv2[i] += alpha * d_all.hv2[i];
+        let tmp = alpha * d_all.hv2[i];
+        index.hv2[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.hv3[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.hv3[i] += alpha * d_all.hv3[i];
+        let tmp = alpha * d_all.hv3[i];
+        index.hv3[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.hv4[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.hv4[i] += alpha * d_all.hv4[i];
+        let tmp = alpha * d_all.hv4[i];
+        index.hv4[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.edge2x[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.edge2x[i] += alpha * d_all.edge2x[i];
+        let tmp = alpha * d_all.edge2x[i];
+        index.edge2x[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.cor25h[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.cor25h[i] += alpha * d_all.cor25h[i];
+        let tmp = alpha * d_all.cor25h[i];
+        index.cor25h[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.cor25v[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.cor25v[i] += alpha * d_all.cor25v[i];
+        let tmp = alpha * d_all.cor25v[i];
+        index.cor25v[i] += tmp;
     }
     for i in 0..(3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.cor33[i] + 0.1);
         let alpha = if tmp1 > tmp2 { tmp2 } else { tmp1 };
-        index.cor33[i] += alpha * d_all.cor33[i];
+        let tmp = alpha * d_all.cor33[i];
+        index.cor33[i] += tmp;
     }
 
-    let alpha = beta / 110000.0;
+    let alpha = beta / 110000.0 * 5.0;
     index.def += alpha * d_all.def;
     index.next_mobility_num += alpha * d_all.next_mobility_num;
-
-    let max = d_all.cor33.iter().fold(0.0 / 0.0, |m, v| v.max(m));
-    if max < 0.01 {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 fn update_d_all(
@@ -184,7 +213,7 @@ fn update_d_all(
     mut index: &mut Index,
     mut d_all: &mut Index,
     count: &mut Index,
-) {
+) -> f32 {
     let e = result - eval_by_model(next_ori, pre_ori, def, next_mobility_num, &mut index);
 
     d_all.def += e * def;
@@ -344,6 +373,8 @@ fn update_d_all(
     let cor33 = board_to_cor33(&next, &pre);
     d_all.cor33[cor33] += e;
     count.cor33[cor33] += 1.0;
+
+    return e * e;
 }
 
 pub fn board_to_bitvec(vec: &mut Vec<f64>, next: u64, pre: u64) {

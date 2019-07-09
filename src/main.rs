@@ -8,7 +8,7 @@ random
 
 クライアント
     cargo run -- -H "127.0.0.1" -p 3000 -n rusThello
-    cargo run -- -H "127.0.0.1" -p 3000 -n evalTest
+    cargo run -- -H "127.0.0.1" -p 3000 -n evalTest --nobook -e
     cargo run -- -H "127.0.0.1" -p 3000 -n random
     cargo run -- --verb -e
     cargo run -- --nobook -e
@@ -281,6 +281,8 @@ fn main() {
         };
     } else if ARGS.dotrain {
         train()
+    } else if ARGS.cntntrain {
+        train_continue()
     } else {
         init_rand_mask();
         make_book();

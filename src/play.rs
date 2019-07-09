@@ -437,8 +437,8 @@ impl Board {
 
         let mobilitys = mobility_ps(player, opponent);
 
-        if ARGS.eval && count >= 53 {
-            // 残りマス数53までランダム(53のときに最後に打って、のこり52)
+        if ARGS.eval && count >= 55 {
+            // 残りマス数55までランダム(55のときに最後に打って、のこり54)
             return get_by_random(mobilitys);
         } else if mobilitys > 0 && count >= 40 && ARGS.book && !ARGS.random {
             //残りマス数が40で次の手を探す(21手目)までやる
