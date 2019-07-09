@@ -43,7 +43,7 @@ pub fn train() {
 }
 pub fn train_continue() {
     //cargo run --release -- --cntntrain
-    for stage in 3..13 {
+    for stage in 2..6 {
         let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
         let mut buf = Vec::new();
         let _ = file.read_to_end(&mut buf).unwrap();
@@ -59,7 +59,7 @@ pub fn train_continue() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..1000 {
+    for iter in 0..500 {
         let mut d_all = make_init_index();
         let mut count = make_init_index();
         let mut sum_e = 0.0;
