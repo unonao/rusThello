@@ -43,7 +43,10 @@ pub fn train() {
     }
 }
 pub fn train_continue() {
-    //cargo run --release -- --cntntrain -S 12 -E 13 --beta 0.001
+    //nohup cargo run --release -- --cntntrain -S 1 -E 4 --iter 3000> log/cntn1.log &
+    //nohup cargo run --release -- --cntntrain -S 4 -E 7 --iter 3000> log/cntn2.log &
+    //nohup cargo run --release -- --cntntrain -S 7 -E 10 --iter 3000> log/cntn3.log &
+    //nohup cargo run --release -- --cntntrain -S 10 -E 13 --iter 3000> log/cntn4.log &
     for stage in ARGS.sttrain..ARGS.endtrain {
         let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
         let mut buf = Vec::new();
@@ -60,7 +63,7 @@ pub fn train_continue() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..100 {
+    for iter in 0..ARGS.iter{
         let mut d_all = make_init_index();
         let mut count = make_init_index();
         let mut sum_e = 0.0;

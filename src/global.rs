@@ -29,6 +29,7 @@ lazy_static! {
             .arg(Arg::from_usage("-S --sttrain [STTRAIN] 'start train'").default_value("2"))
             .arg(Arg::from_usage("-E --endtrain [ENDTRAIN] 'end train'").default_value("13"))
             .arg(Arg::from_usage("-B --beta [BETA] 'train beta'").default_value("0.0004"))
+            .arg(Arg::from_usage("-I --iter [ITER] 'train iterate num'").default_value("100"))
             .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("3"))
             .args_from_usage("--verb 'verbose mode: level group'
                                 --debug 'debug mode: level group'
@@ -69,6 +70,7 @@ lazy_static! {
             sttrain:matches.value_of("sttrain").unwrap().parse().unwrap(),
             endtrain:matches.value_of("endtrain").unwrap().parse().unwrap(),
             beta:matches.value_of("beta").unwrap().parse().unwrap(),
+            iter:matches.value_of("iter").unwrap().parse().unwrap(),
         }
     };
 
@@ -99,6 +101,7 @@ pub struct ArgsSt {
     pub endtrain: i32,
     pub sttrain: i32,
     pub beta: f32,
+    pub iter: i32,
 }
 
 pub const MAX: i32 = 1 << 30;
