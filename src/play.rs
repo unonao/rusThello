@@ -437,14 +437,14 @@ impl Board {
 
         let mobilitys = mobility_ps(player, opponent);
 
+        if count == 60 {
+            return coordinate_to_bit(3, 2); //d3
+        }
         if ARGS.eval && count >= 55 {
             // 残りマス数55までランダム(55のときに最後に打って、のこり54)
             return get_by_random(mobilitys);
         } else if mobilitys > 0 && count >= 40 && ARGS.book && !ARGS.random {
             //残りマス数が40で次の手を探す(21手目)までやる
-            if count == 60 {
-                return coordinate_to_bit(3, 2); //d3
-            }
             let next_by_book: u64 = get_by_book(color, count);
             if next_by_book > 0 {
                 return next_by_book;
@@ -456,7 +456,21 @@ impl Board {
             return match ARGS.name.as_str() {
                 "random" => get_by_random(mobilitys),
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
-                "evalTest" => get_by_model(player, opponent, mobilitys, count), // simple_minimax
+                //"evalTest" => get_by_model(player, opponent, mobilitys, count),
+                "evalTest" => {
+                    let (val, pos) = negascout(
+                        player,
+                        opponent,
+                        true,
+                        mobilitys,
+                        ARGS.think_depth,
+                        count,
+                        -FMAX,
+                        FMAX,
+                    );
+                    println!("val:{}", val);
+                    pos
+                }
                 "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
                 "rusThedom" => {
                     // randomでrandomに選ぶ
@@ -467,7 +481,7 @@ impl Board {
                         get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
                     }
                 }
-                _ => get_by_simple_minimax(player, opponent, mobilitys),
+                _ => get_by_simple_alpha_beta(player, opponent, mobilitys),
             };
         } else {
             let start = Instant::now();

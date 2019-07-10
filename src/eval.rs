@@ -5,13 +5,14 @@ use crate::eval_fun::*;
 use crate::global::*;
 use crate::play::*;
 
-pub fn board_eval(me: u64, op: u64, _count: i32) -> i32 {
+pub fn board_eval(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
     match ARGS.name.as_str() {
-        "rusThello" => second_eval(me, op),
-        _ => second_eval(me, op),
+        "rusThello" => second_eval(me, op) as f32,
+        //"evalTest" => eval_use_model(me, op, count, is_player),
+        _ => second_eval(me, op) as f32,
     }
 }
-pub fn board_eval_by_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
+pub fn eval_use_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
     let stage = (60 - count - 1) / 5;
     //let next_stage = (60 - count) / 5;
     //let pre_stage = (60 - count - 2) / 5;
@@ -37,7 +38,7 @@ pub fn board_eval_by_model(me: u64, op: u64, count: i32, is_player: bool) -> f32
         return -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     }
 }
-
+/*
 pub fn eval_use_model(me: u64, op: u64) -> i32 {
     let blank = !(me | op);
     let me_num: i32 = me.count_ones() as i32;
@@ -79,7 +80,7 @@ pub fn sub_eval3(one: u64, blank: u64) -> i32 {
             + (((three & one).count_ones() as i32) * 3)
             + (((minus_five & one).count_ones() as i32) * -5)
     }
-}
+}*/
 
 pub fn second_eval(me: u64, op: u64) -> i32 {
     let blank = !(me | op);
