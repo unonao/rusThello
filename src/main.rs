@@ -70,7 +70,7 @@ fn my_move(
     count: i32,
     color: i32,
     opponent_name: String,
-    time: i32,
+    _time: i32,
 ) {
     let pmove: Move = board.get_next(color, count);
     let bit: u64 = move_to_bit(&pmove);

@@ -9,6 +9,157 @@ use crate::eval::*;
 use crate::global::*;
 use crate::play::*;
 
+pub const FMAX: f32 = 100000000.0;
+
+pub fn negascout(
+    next: u64,
+    pre: u64,
+    is_player: bool,
+    mobilitys: u64,
+    depth: i32,
+    count: i32,
+    alpha_ori: f32,
+    beta: f32,
+) -> (f32, u64) {
+    let mut alpha = alpha_ori;
+
+    if depth <= 0 {
+        let (me, op) = if is_player { (next, pre) } else { (pre, next) };
+        let mut v = board_eval(me, op, count, is_player);
+        if !is_player {
+            v = -v
+        };
+        //println!("board_eval:{}, is_player:{}", v, is_player);
+
+        return (v, 0);
+    }
+
+    if mobilitys == 0 {
+        // pass or gamesetのとき
+        if is_finished(next, pre) {
+            if is_win(next, pre) {
+                return (FMAX, 0);
+            } else {
+                return (-FMAX, 0);
+            }
+        } else {
+            let next_mobilitys = mobility_ps(pre, next);
+            let (v, tmp) = negascout(
+                pre,
+                next,
+                !is_player,
+                next_mobilitys,
+                depth - 1,
+                count,
+                -beta,
+                -alpha,
+            );
+            return (-v, tmp);
+        }
+    }
+
+    let mut next_vec: Vec<u64> = Vec::new();
+    let mut mask: u64 = 0x8000000000000000;
+    while mask > 0 {
+        if (mask & mobilitys) > 0 {
+            next_vec.push(mask);
+        }
+        mask = mask >> 1;
+    }
+    //println!("vec len:{}", next_vec.len());
+    /*
+        必要ならnext_vecのソート(moveOrdering)
+    */
+
+    let mut max: f32 = -FMAX;
+    let mut result_pos: u64 = 0;
+
+    // betterな手から探索
+    let better = next_vec[0];
+    let (next_after, pre_after) = flip_board(next, pre, better);
+    let next_mobilitys = mobility_ps(pre_after, next_after);
+    let (mut v, _) = negascout(
+        pre_after,
+        next_after,
+        !is_player,
+        next_mobilitys,
+        depth - 1,
+        count - 1,
+        -beta,
+        -alpha,
+    );
+    v = -v;
+    //カット
+    if beta <= v {
+        return (v, better);
+    };
+    if alpha < v {
+        alpha = v;
+        max = v;
+        result_pos = better;
+    }
+
+    let mut flag = 0;
+    for pos in next_vec {
+        if flag == 0 {
+            flag += 1;
+            continue;
+        };
+        /*
+        value <= v <= alpha : 選択されないので、ちゃんとvalueを求めない
+        alpha + 0.1 <= v <= value : bata <= v ならカット,
+            そうでないなら、 beta<= valueか, value <= betaかわからない。
+        */
+        let (next_after, pre_after) = flip_board(next, pre, pos);
+        let next_mobilitys = mobility_ps(pre_after, next_after);
+        // null window
+        let (v_tmp, _) = negascout(
+            pre_after,
+            next_after,
+            !is_player,
+            next_mobilitys,
+            depth - 1,
+            count - 1,
+            -alpha - 0.1,
+            -alpha,
+        );
+        v = -v_tmp;
+
+        //カット
+        if beta <= v {
+            return (v, pos);
+        };
+
+        if alpha < v {
+            alpha = v;
+            let (v_tmp, _) = negascout(
+                pre_after,
+                next_after,
+                !is_player,
+                next_mobilitys,
+                depth - 1,
+                count - 1,
+                -beta,
+                -alpha,
+            );
+            v = -v_tmp;
+
+            // カット
+            if beta <= v {
+                return (v, pos);
+            }
+            if alpha < v {
+                alpha = v
+            }
+        }
+        if max < v {
+            max = v;
+            result_pos = pos
+        };
+    }
+    return (max, result_pos);
+}
+
 pub fn get_by_random(mobilitys: u64) -> u64 {
     // 最初の着手可能場所を取得(最も単純な思考ルーチン)
     let mut mask: u64 = 0x8000000000000000;
@@ -48,39 +199,6 @@ pub fn get_by_first(mobilitys: u64) -> u64 {
     return mask;
 }
 
-pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u64 {
-    // 評価関数に基づいた着手可能場所を取得(単純な思考ルーチン)
-    if mobilitys == 0 {
-        return 0;
-    } else {
-        let mut next: u64 = 1;
-        let mut mask: u64 = 0x8000000000000000;
-        let mut best = MIN;
-        while mask > 0 {
-            if (mask & mobilitys) > 0 {
-                let (next_player, next_opponent) = flip_board(player, opponent, mask);
-                let next_mobilitys = mobility_ps(next_opponent, next_player);
-
-                let val = alpha_beta(
-                    next_player,
-                    next_opponent,
-                    false,
-                    next_mobilitys,
-                    ARGS.think_depth,
-                    MIN,
-                    MAX,
-                );
-                if best < val {
-                    best = val;
-                    next = mask;
-                }
-            }
-            mask = mask >> 1;
-        }
-        return next;
-    }
-}
-
 pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u64 {
     // 評価関数に基づいた着手可能場所を取得(単純な思考ルーチン)
     if mobilitys == 0 {
@@ -111,11 +229,10 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
             }
             mask = mask >> 1;
         }
-        println!("count:{}, best:{}", count, best);
+        //println!("count:{}, best:{}", count, best);
         return next;
     }
 }
-
 fn model_alpha_beta(
     player: u64,
     opponent: u64,
@@ -128,7 +245,7 @@ fn model_alpha_beta(
 ) -> f32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval_by_model(player, opponent, count, is_player);
+        return board_eval(player, opponent, count, is_player);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -233,18 +350,52 @@ fn model_alpha_beta(
     }
 }
 
+pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u64 {
+    if mobilitys == 0 {
+        return 0;
+    } else {
+        let mut next: u64 = 1;
+        let mut mask: u64 = 0x8000000000000000;
+        let mut best = -FMAX;
+        //println!("vec len:{}", mobilitys.count_ones());
+        while mask > 0 {
+            if (mask & mobilitys) > 0 {
+                let (next_player, next_opponent) = flip_board(player, opponent, mask);
+                let next_mobilitys = mobility_ps(next_opponent, next_player);
+
+                let val = alpha_beta(
+                    next_player,
+                    next_opponent,
+                    false,
+                    next_mobilitys,
+                    ARGS.think_depth - 1,
+                    -FMAX,
+                    FMAX,
+                );
+                //println!("board_eval:{}, mask:{}", val, mask);
+                if best < val {
+                    best = val;
+                    next = mask;
+                }
+            }
+            mask = mask >> 1;
+        }
+        println!("val:{}", best);
+        return next;
+    }
+}
 fn alpha_beta(
     player: u64,
     opponent: u64,
     is_player: bool,
     mobilitys: u64,
     depth: i32,
-    alpha: i32,
-    beta: i32,
-) -> i32 {
+    alpha: f32,
+    beta: f32,
+) -> f32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval(player, opponent, 0);
+        return board_eval(player, opponent, 0, is_player);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -253,9 +404,9 @@ fn alpha_beta(
             // passのとき
             if is_finished(player, opponent) {
                 if is_win(player, opponent) {
-                    return MAX;
+                    return FMAX;
                 } else {
-                    return MIN;
+                    return -FMAX;
                 }
             } else {
                 let next_mobilitys = mobility_ps(opponent, player);
@@ -270,23 +421,23 @@ fn alpha_beta(
                 );
             }
         } else {
-            let mut alp: i32 = alpha;
+            let mut alp: f32 = alpha;
             while mask > 0 {
                 if (mask & mobilitys) > 0 {
                     let (next_player, next_opponent) = flip_board(player, opponent, mask);
                     let next_mobilitys = mobility_ps(next_opponent, next_player);
-                    alp = std::cmp::max(
+                    let tmp = alpha_beta(
+                        next_player,
+                        next_opponent,
+                        false,
+                        next_mobilitys,
+                        depth - 1,
                         alp,
-                        alpha_beta(
-                            next_player,
-                            next_opponent,
-                            false,
-                            next_mobilitys,
-                            depth - 1,
-                            alp,
-                            beta,
-                        ),
+                        beta,
                     );
+                    if alp < tmp {
+                        alp = tmp
+                    };
                     if beta <= alp {
                         break;
                     }
@@ -300,9 +451,9 @@ fn alpha_beta(
             // passのとき
             if is_finished(player, opponent) {
                 if is_win(player, opponent) {
-                    return MAX;
+                    return FMAX;
                 } else {
-                    return MIN;
+                    return -FMAX;
                 }
             } else {
                 let next_mobilitys = mobility_ps(player, opponent);
@@ -317,23 +468,23 @@ fn alpha_beta(
                 );
             }
         } else {
-            let mut be: i32 = beta;
+            let mut be: f32 = beta;
             while mask > 0 {
                 if (mask & mobilitys) > 0 {
                     let (next_opponent, next_player) = flip_board(opponent, player, mask);
                     let next_mobilitys = mobility_ps(next_player, next_opponent);
-                    be = std::cmp::min(
+                    let tmp = alpha_beta(
+                        next_player,
+                        next_opponent,
+                        true,
+                        next_mobilitys,
+                        depth - 1,
+                        alpha,
                         be,
-                        alpha_beta(
-                            next_player,
-                            next_opponent,
-                            true,
-                            next_mobilitys,
-                            depth - 1,
-                            alpha,
-                            be,
-                        ),
                     );
+                    if be > tmp {
+                        be = tmp;
+                    };
                     if be <= alpha {
                         break;
                     }
@@ -344,7 +495,7 @@ fn alpha_beta(
         }
     }
 }
-
+/*
 pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 {
     // 評価関数に基づいた着手可能場所を取得(単純な思考ルーチン)
     if mobilitys == 0 {
@@ -379,7 +530,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
 fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i32) -> i32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval(player, opponent, 0);
+        return board_eval(player, opponent, 0, is_player);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -442,3 +593,4 @@ fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i
         }
     }
 }
+*/
