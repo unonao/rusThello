@@ -458,6 +458,7 @@ impl Board {
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
                 //"evalTest" => get_by_model(player, opponent, mobilitys, count),
                 "evalTest" => {
+                    // invalid moveあり
                     let (val, pos) = negascout(
                         player,
                         opponent,
@@ -468,7 +469,22 @@ impl Board {
                         -FMAX,
                         FMAX,
                     );
-                    println!("val:{}", val);
+                    //println!("val:{}", val);
+                    pos
+                }
+                "simple" => {
+                    // invalid moveあり
+                    let (val, pos) = negascout(
+                        player,
+                        opponent,
+                        true,
+                        mobilitys,
+                        ARGS.think_depth,
+                        count,
+                        -FMAX,
+                        FMAX,
+                    );
+                    //println!("val:{}", val);
                     pos
                 }
                 "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax

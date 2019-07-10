@@ -8,7 +8,7 @@ use crate::play::*;
 pub fn board_eval(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
     match ARGS.name.as_str() {
         "rusThello" => second_eval(me, op) as f32,
-        //"evalTest" => eval_use_model(me, op, count, is_player),
+        "evalTest" => eval_use_model(me, op, count, is_player),
         _ => second_eval(me, op) as f32,
     }
 }
