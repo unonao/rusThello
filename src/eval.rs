@@ -1,41 +1,46 @@
 /*
     評価関数
 */
+use crate::color::*;
 use crate::eval_fun::*;
 use crate::global::*;
 use crate::play::*;
 
-pub fn board_eval(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
+pub fn board_eval(me: u64, op: u64, count: i32, is_player: bool, color: i32) -> f32 {
     match ARGS.name.as_str() {
         "rusThello" => second_eval(me, op) as f32,
-        "evalTest" => eval_use_model(me, op, count, is_player),
+        "evalTest" => eval_use_model(me, op, count, is_player, color),
         _ => second_eval(me, op) as f32,
     }
 }
-pub fn eval_use_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
+pub fn eval_use_model(me: u64, op: u64, count: i32, is_player: bool, color: i32) -> f32 {
     let stage = (60 - count - 1) / 5;
     //let next_stage = (60 - count) / 5;
     //let pre_stage = (60 - count - 2) / 5;
-    if is_player {
+    if color == BLACK {
         let def = stone_def(me, op) as f32;
-        let next_mobilitys_num = mobility_ps(me, op).count_ones() as f32;
-        /*
-        println!(
-            "eval val:{}",
-            eval_by_model(&me, &op, &def, &next_mobilitys_num, &MODEL[stage as usize])
+        let next_mobilitys_num_black = mobility_ps(me, op).count_ones() as f32;
+        let next_mobilitys_num_white = mobility_ps(op, me).count_ones() as f32;
+        return eval_by_model(
+            &me,
+            &op,
+            &def,
+            &next_mobilitys_num_black,
+            &next_mobilitys_num_white,
+            &MODEL[stage as usize],
         );
-        */
-        return eval_by_model(&me, &op, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     } else {
         let def = stone_def(op, me) as f32;
-        let next_mobilitys_num = mobility_ps(op, me).count_ones() as f32;
-        /*
-        println!(
-            "eval val:{}",
-            -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize])
+        let next_mobilitys_num_black = mobility_ps(op, me).count_ones() as f32;
+        let next_mobilitys_num_white = mobility_ps(me, op).count_ones() as f32;
+        return -eval_by_model(
+            &op,
+            &me,
+            &def,
+            &next_mobilitys_num_black,
+            &next_mobilitys_num_white,
+            &MODEL[stage as usize],
         );
-        */
-        return -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     }
 }
 /*
