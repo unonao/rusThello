@@ -131,7 +131,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
 
 fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
     let beta = ARGS.beta;
-    let tmp1 = beta / 50.0;
+    let tmp1 = beta / 100.0;
 
     for i in 0..(3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag4[i] + 0.1);
@@ -206,7 +206,7 @@ fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
         index.cor33[i] += tmp;
     }
 
-    let alpha = beta / 110000.0 * 5.0;
+    let alpha = beta / 110000.0 / 5.0;
     index.def += alpha * d_all.def;
     index.next_mobility_num_black += alpha * d_all.next_mobility_num_black;
     index.next_mobility_num_white += alpha * d_all.next_mobility_num_white;
