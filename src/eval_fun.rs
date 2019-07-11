@@ -155,14 +155,14 @@ pub fn board_to_diag4(next: &u64, pre: &u64) -> usize {
         0x0000008000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 3;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -193,14 +193,14 @@ pub fn board_to_diag5(next: &u64, pre: &u64) -> usize {
         0x0000000080000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 4;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -233,14 +233,14 @@ pub fn board_to_diag6(next: &u64, pre: &u64) -> usize {
         0x0000000000800000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 5;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -275,14 +275,14 @@ pub fn board_to_diag7(next: &u64, pre: &u64) -> usize {
         0x0000000000008000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 6;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -319,14 +319,14 @@ pub fn board_to_diag8(next: &u64, pre: &u64) -> usize {
         0x0000000000000080,
     ];
     let mut result2: i32 = 0;
-    let mut count = 7;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -364,14 +364,14 @@ pub fn board_to_hv2(next: &u64, pre: &u64) -> usize {
         0x0080000000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 7;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -408,14 +408,14 @@ pub fn board_to_hv3(next: &u64, pre: &u64) -> usize {
         0x0000800000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 7;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -452,14 +452,14 @@ pub fn board_to_hv4(next: &u64, pre: &u64) -> usize {
         0x0000008000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 7;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -500,14 +500,14 @@ pub fn board_to_edge2x(next: &u64, pre: &u64) -> usize {
         0x00020000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 9;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -548,14 +548,14 @@ pub fn board_to_cor25h(next: &u64, pre: &u64) -> usize {
         0x00800000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 9;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -596,14 +596,14 @@ pub fn board_to_cor25v(next: &u64, pre: &u64) -> usize {
         0x00000000800000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 9;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
@@ -642,14 +642,14 @@ pub fn board_to_cor33(next: &u64, pre: &u64) -> usize {
         0x00008000000000,
     ];
     let mut result2: i32 = 0;
-    let mut count = 8;
+    let mut count = mask.len();
     for i in mask {
+        count -= 1;
         if (next & i) == i {
             result2 += 2 * THREE[count];
         } else if (pre & i) == i {
             result2 += THREE[count];
         }
-        count -= 1;
     }
     std::cmp::min(result1, result2) as usize
 }
