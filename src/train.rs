@@ -63,7 +63,7 @@ pub fn train_continue() {
 }
 
 fn make_model(stage: &i32, mut index: &mut Index) {
-    for iter in 0..ARGS.iter{
+    for iter in 0..ARGS.iter {
         let mut d_all = make_init_index();
         let mut count = make_init_index();
         let mut sum_e = 0.0;

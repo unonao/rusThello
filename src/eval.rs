@@ -38,8 +38,8 @@ pub fn eval_use_model(me: u64, op: u64, count: i32, is_player: bool) -> f32 {
         return -eval_by_model(&op, &me, &def, &next_mobilitys_num, &MODEL[stage as usize]);
     }
 }
-/*
-pub fn eval_use_model(me: u64, op: u64) -> i32 {
+/**/
+pub fn eval3(me: u64, op: u64) -> i32 {
     let blank = !(me | op);
     let me_num: i32 = me.count_ones() as i32;
     let op_num: i32 = op.count_ones() as i32;
@@ -80,7 +80,7 @@ pub fn sub_eval3(one: u64, blank: u64) -> i32 {
             + (((three & one).count_ones() as i32) * 3)
             + (((minus_five & one).count_ones() as i32) * -5)
     }
-}*/
+}
 
 pub fn second_eval(me: u64, op: u64) -> i32 {
     let blank = !(me | op);
