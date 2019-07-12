@@ -28,7 +28,7 @@ lazy_static! {
             .arg(Arg::from_usage("-s --solve [SOLVE] 'start solver depth'").default_value("12"))
             .arg(Arg::from_usage("-S --sttrain [STTRAIN] 'start train'").default_value("2"))
             .arg(Arg::from_usage("-E --endtrain [ENDTRAIN] 'end train'").default_value("13"))
-            .arg(Arg::from_usage("-B --beta [BETA] 'train beta'").default_value("0.004"))
+            .arg(Arg::from_usage("-B --beta [BETA] 'train beta'").default_value("0.003"))
             .arg(Arg::from_usage("-I --iter [ITER] 'train iterate num'").default_value("100"))
             .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("3"))
             .args_from_usage("--verb 'verbose mode: level group'

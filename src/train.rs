@@ -34,7 +34,8 @@ pub fn make_init_index() -> Index {
 }
 
 pub fn train() {
-    for stage in 1..13 {
+    // nohup cargo run --release -- --dotrain -S 1 -E 4 --iter 100 > log/cntn1.log &
+    for stage in ARGS.sttrain..ARGS.endtrain {
         // 12のステージ
         let mut index = make_init_index();
         println!("start stage{}", stage);
@@ -44,10 +45,10 @@ pub fn train() {
     }
 }
 pub fn train_continue() {
-    //nohup cargo run --release -- --cntntrain -S 1 -E 4 --iter 3000> log/cntn1.log &
-    //nohup cargo run --release -- --cntntrain -S 4 -E 7 --iter 3000> log/cntn2.log &
-    //nohup cargo run --release -- --cntntrain -S 7 -E 10 --iter 3000> log/cntn3.log &
-    //nohup cargo run --release -- --cntntrain -S 10 -E 13 --iter 3000> log/cntn4.log &
+    // nohup cargo run --release -- --cntntrain -S 1 -E 4 --iter 3000 > log/cntn1.log &
+    // nohup cargo run --release -- --cntntrain -S 4 -E 7 --iter 3000 > log/cntn2.log &
+    // nohup cargo run --release -- --cntntrain -S 7 -E 10 --iter 3000 > log/cntn3.log &
+    // nohup cargo run --release -- --cntntrain -S 10 -E 13 --iter 3000 > log/cntn4.log &
     for stage in ARGS.sttrain..ARGS.endtrain {
         let mut file = File::open(format!("./model/stage{}.txt", stage)).unwrap();
         let mut buf = Vec::new();
@@ -72,9 +73,19 @@ fn make_model(stage: &i32, mut index: &mut Index) {
         for file_count in 1..6 {
             // for all i
             // 1ステージ5ファイル
-
+            /*
+            println!(
+                "open file:{},   old:{}",
+                file_count + (stage - 1) * 5 - 1,
+                file_count * stage - 1
+            );
+            */
             for result in BufReader::new(
-                File::open(format!("./train/train{}.txt", file_count * stage - 1)).unwrap(),
+                File::open(format!(
+                    "./train/train{}.txt",
+                    file_count + (stage - 1) * 5 - 1
+                ))
+                .unwrap(),
             )
             .lines()
             {
