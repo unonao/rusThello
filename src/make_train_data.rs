@@ -18,7 +18,8 @@ pub fn make_train_data() -> Result<(), Box<std::error::Error>> {
         let mut next: u64;
         let mut pre: u64;
         let mut def: i32;
-        let mut next_mobility_num: u32; // passのときは盤面評価をしないこととする。(つまり0はない)
+        let mut next_mobility_num_black: u32;
+        let mut next_mobility_num_white: u32;
         match result {
             Ok(n) => {
                 let mut board = Board::init();
@@ -33,73 +34,55 @@ pub fn make_train_data() -> Result<(), Box<std::error::Error>> {
                 }
                 let result_in_black_view: f32 = iter.next().unwrap().trim_end().parse().unwrap();
                 for count in 0..60 {
-                    let x: i32 = vec_x[count];
-                    let y: i32 = vec_y[count];
+                    let mut x: i32 = vec_x[count];
+                    let mut y: i32 = vec_y[count];
                     if x == 10 {
                         break;
-                    } else if x > 0 && y > 0 {
-                        let color = BLACK;
-                        let x = x - 1;
-                        let y = y - 1;
-                        let next_stone: u64 = coordinate_to_bit(x, y);
-                        board = board.flip_board_by_bit(color, next_stone);
-
-                        let mobility = mobility_ps(board.white, board.black);
-                        if mobility == 0 {
-                            //whiteの PASS
-                            next = board.black;
-                            pre = board.white;
-                            def = stone_def(next, pre);
-                            next_mobility_num = mobility_ps(next, pre).count_ones();
-                            writeln!(
-                                fvec[count],
-                                "{} {} {} {} {}",
-                                next, pre, def, next_mobility_num, result_in_black_view
-                            )?;
-                        } else {
-                            pre = board.black;
-                            next = board.white;
-                            def = stone_def(next, pre);
-                            next_mobility_num = mobility_ps(next, pre).count_ones();
-                            writeln!(
-                                fvec[count],
-                                "{} {} {} {} {}",
-                                next, pre, def, next_mobility_num, -result_in_black_view
-                            )?;
-                        }
-                    } else if x < 0 && y < 0 {
-                        let color = WHITE;
-                        let x = -x - 1;
-                        let y = -y - 1;
-                        let next_stone: u64 = coordinate_to_bit(x, y);
-                        board = board.flip_board_by_bit(color, next_stone);
-
-                        let mobility = mobility_ps(board.black, board.white);
-                        if mobility == 0 {
-                            //black PASS
-                            pre = board.black;
-                            next = board.white;
-                            def = stone_def(next, pre);
-                            next_mobility_num = mobility_ps(next, pre).count_ones();
-                            writeln!(
-                                fvec[count],
-                                "{} {} {} {} {}",
-                                next, pre, def, next_mobility_num, -result_in_black_view
-                            )?;
-                        } else {
-                            next = board.black;
-                            pre = board.white;
-                            def = stone_def(next, pre);
-                            next_mobility_num = mobility_ps(next, pre).count_ones();
-                            writeln!(
-                                fvec[count],
-                                "{} {} {} {} {}",
-                                next, pre, def, next_mobility_num, result_in_black_view
-                            )?;
-                        }
                     } else {
-                        println!("error!!");
-                        break;
+                        let mut color = BLACK;
+                        if x > 0 && y > 0 {
+                            color = BLACK;
+                            x = x - 1;
+                            y = y - 1;
+                        } else if x < 0 && y < 0 {
+                            color = WHITE;
+                            x = -x - 1;
+                            y = -y - 1;
+                        } else {
+                            println!("error!!");
+                            break;
+                        }
+                        let next_stone: u64 = coordinate_to_bit(x, y);
+
+                        // invalid move のチェック
+                        let (player, opponent) = if color == BLACK {
+                            (board.black, board.white)
+                        } else {
+                            (board.white, board.black)
+                        };
+                        let mobilitys = mobility_ps(player, opponent);
+                        if (mobilitys & next_stone) != next_stone {
+                            println!("invalid move!!");
+                            break;
+                        }
+
+                        board = board.flip_board_by_bit(color, next_stone);
+
+                        def = stone_def(board.black, board.white);
+                        next_mobility_num_black =
+                            mobility_ps(board.black, board.white).count_ones();
+                        next_mobility_num_white =
+                            mobility_ps(board.white, board.black).count_ones();
+                        writeln!(
+                            fvec[count],
+                            "{} {} {} {} {} {}",
+                            board.black,
+                            board.white,
+                            def,
+                            next_mobility_num_black,
+                            next_mobility_num_white,
+                            result_in_black_view
+                        )?;
                     }
                 }
             }

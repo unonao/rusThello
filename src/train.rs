@@ -28,12 +28,13 @@ pub fn make_init_index() -> Index {
         cor25v: vec![0.0; 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3],
         cor33: vec![0.0; 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3],
         def: 0.0,
-        next_mobility_num: 0.0,
+        next_mobility_num_black: 0.0,
+        next_mobility_num_white: 0.0,
     }
 }
 
 pub fn train() {
-    for stage in 3..13 {
+    for stage in 1..13 {
         // 12のステージ
         let mut index = make_init_index();
         println!("start stage{}", stage);
@@ -81,17 +82,19 @@ fn make_model(stage: &i32, mut index: &mut Index) {
                     Ok(n) => {
                         data_count += 1.0;
                         let mut iter = n.split_whitespace();
-                        let next: u64 = iter.next().unwrap().parse().unwrap();
-                        let pre: u64 = iter.next().unwrap().parse().unwrap();
+                        let black: u64 = iter.next().unwrap().parse().unwrap();
+                        let white: u64 = iter.next().unwrap().parse().unwrap();
                         let def: f32 = iter.next().unwrap().parse().unwrap();
-                        let next_mobility_num: f32 = iter.next().unwrap().parse().unwrap();
+                        let next_mobility_num_black: f32 = iter.next().unwrap().parse().unwrap();
+                        let next_mobility_num_white: f32 = iter.next().unwrap().parse().unwrap();
                         let result: f32 = iter.next().unwrap().parse().unwrap();
 
                         sum_e += update_d_all(
-                            &next,
-                            &pre,
+                            &black,
+                            &white,
                             &def,
-                            &next_mobility_num,
+                            &next_mobility_num_black,
+                            &next_mobility_num_white,
                             &result,
                             &mut index,
                             &mut d_all,
@@ -128,7 +131,7 @@ fn make_model(stage: &i32, mut index: &mut Index) {
 
 fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
     let beta = ARGS.beta;
-    let tmp1 = beta / 50.0;
+    let tmp1 = beta / 100.0;
 
     for i in 0..(3 * 3 * 3 * 3) {
         let tmp2 = beta / (count.diag4[i] + 0.1);
@@ -203,26 +206,36 @@ fn update_index(d_all: &mut Index, mut index: &mut Index, count: &mut Index) {
         index.cor33[i] += tmp;
     }
 
-    let alpha = beta / 110000.0 * 5.0;
+    let alpha = beta / 110000.0 / 5.0;
     index.def += alpha * d_all.def;
-    index.next_mobility_num += alpha * d_all.next_mobility_num;
+    index.next_mobility_num_black += alpha * d_all.next_mobility_num_black;
+    index.next_mobility_num_white += alpha * d_all.next_mobility_num_white;
 }
 
 fn update_d_all(
     next_ori: &u64,
     pre_ori: &u64,
     def: &f32,
-    next_mobility_num: &f32,
+    next_mobility_num_black: &f32,
+    next_mobility_num_white: &f32,
     result: &f32,
     mut index: &mut Index,
     mut d_all: &mut Index,
     count: &mut Index,
 ) -> f32 {
-    let e = result - eval_by_model(next_ori, pre_ori, def, next_mobility_num, &mut index);
+    let e = result
+        - eval_by_model(
+            next_ori,
+            pre_ori,
+            def,
+            next_mobility_num_black,
+            next_mobility_num_white,
+            &mut index,
+        );
 
     d_all.def += e * def;
-    d_all.next_mobility_num += e * next_mobility_num;
-
+    d_all.next_mobility_num_black += e * next_mobility_num_black;
+    d_all.next_mobility_num_white += e * next_mobility_num_white;
     let next = next_ori;
     let pre = pre_ori;
 

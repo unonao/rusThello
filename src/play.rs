@@ -456,28 +456,15 @@ impl Board {
             return match ARGS.name.as_str() {
                 "random" => get_by_random(mobilitys),
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
-                //"evalTest" => get_by_model(player, opponent, mobilitys, count),
-                "evalTest" => {
-                    // invalid moveあり
-                    let (val, pos) = negascout(
-                        player,
-                        opponent,
-                        true,
-                        mobilitys,
-                        ARGS.think_depth,
-                        count,
-                        -FMAX,
-                        FMAX,
-                    );
-                    //println!("val:{}", val);
-                    pos
-                }
+                //"evalTest" => get_by_model(player, opponent, mobilitys, count,color),
+                "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys, color),
                 "simple" => {
                     // invalid moveあり
                     let (val, pos) = negascout(
                         player,
                         opponent,
                         true,
+                        color,
                         mobilitys,
                         ARGS.think_depth,
                         count,
@@ -487,17 +474,9 @@ impl Board {
                     //println!("val:{}", val);
                     pos
                 }
-                "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys), // simple_minimax
-                "rusThedom" => {
-                    // randomでrandomに選ぶ
-                    let mut rng = rand::thread_rng();
-                    if rng.gen() {
-                        get_by_random(mobilitys)
-                    } else {
-                        get_by_simple_alpha_beta(player, opponent, mobilitys) // simple_minimax
-                    }
-                }
-                _ => get_by_simple_alpha_beta(player, opponent, mobilitys),
+                "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys, color), // simple_minimax
+
+                _ => get_by_simple_alpha_beta(player, opponent, mobilitys, color),
             };
         } else {
             let start = Instant::now();

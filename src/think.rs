@@ -15,6 +15,7 @@ pub fn negascout(
     next: u64,
     pre: u64,
     is_player: bool,
+    color: i32,
     mobilitys: u64,
     depth: i32,
     count: i32,
@@ -25,7 +26,7 @@ pub fn negascout(
 
     if depth <= 0 {
         let (me, op) = if is_player { (next, pre) } else { (pre, next) };
-        let mut v = board_eval(me, op, count, is_player);
+        let mut v = board_eval(me, op, count, is_player, color);
         if !is_player {
             v = -v
         };
@@ -48,6 +49,7 @@ pub fn negascout(
                 pre,
                 next,
                 !is_player,
+                color,
                 next_mobilitys,
                 depth - 1,
                 count,
@@ -82,6 +84,7 @@ pub fn negascout(
         pre_after,
         next_after,
         !is_player,
+        color,
         next_mobilitys,
         depth - 1,
         count - 1,
@@ -117,6 +120,7 @@ pub fn negascout(
             pre_after,
             next_after,
             !is_player,
+            color,
             next_mobilitys,
             depth - 1,
             count - 1,
@@ -136,6 +140,7 @@ pub fn negascout(
                 pre_after,
                 next_after,
                 !is_player,
+                color,
                 next_mobilitys,
                 depth - 1,
                 count - 1,
@@ -199,7 +204,7 @@ pub fn get_by_first(mobilitys: u64) -> u64 {
     return mask;
 }
 
-pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u64 {
+pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32, color: i32) -> u64 {
     // 評価関数に基づいた着手可能場所を取得(単純な思考ルーチン)
     if mobilitys == 0 {
         return 0;
@@ -216,6 +221,7 @@ pub fn get_by_model(player: u64, opponent: u64, mobilitys: u64, count: i32) -> u
                     next_player,
                     next_opponent,
                     false,
+                    color,
                     next_mobilitys,
                     ARGS.think_depth,
                     std::f32::MIN,
@@ -237,6 +243,7 @@ fn model_alpha_beta(
     player: u64,
     opponent: u64,
     is_player: bool,
+    color: i32,
     mobilitys: u64,
     depth: i32,
     alpha: f32,
@@ -245,7 +252,7 @@ fn model_alpha_beta(
 ) -> f32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval(player, opponent, count, is_player);
+        return board_eval(player, opponent, count, is_player, color);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -264,6 +271,7 @@ fn model_alpha_beta(
                     player,
                     opponent,
                     false,
+                    color,
                     next_mobilitys,
                     depth - 1,
                     alpha,
@@ -281,6 +289,7 @@ fn model_alpha_beta(
                         next_player,
                         next_opponent,
                         false,
+                        color,
                         next_mobilitys,
                         depth - 1,
                         alp,
@@ -313,6 +322,7 @@ fn model_alpha_beta(
                     player,
                     opponent,
                     true,
+                    color,
                     next_mobilitys,
                     depth - 1,
                     alpha,
@@ -330,6 +340,7 @@ fn model_alpha_beta(
                         next_player,
                         next_opponent,
                         true,
+                        color,
                         next_mobilitys,
                         depth - 1,
                         alpha,
@@ -350,7 +361,7 @@ fn model_alpha_beta(
     }
 }
 
-pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u64 {
+pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64, color: i32) -> u64 {
     if mobilitys == 0 {
         return 0;
     } else {
@@ -367,6 +378,7 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64) -> u
                     next_player,
                     next_opponent,
                     false,
+                    color,
                     next_mobilitys,
                     ARGS.think_depth - 1,
                     -FMAX,
@@ -388,6 +400,7 @@ fn alpha_beta(
     player: u64,
     opponent: u64,
     is_player: bool,
+    color: i32,
     mobilitys: u64,
     depth: i32,
     alpha: f32,
@@ -395,7 +408,7 @@ fn alpha_beta(
 ) -> f32 {
     /* 葉の場合、評価値を返す */
     if depth <= 0 {
-        return board_eval(player, opponent, 0, is_player);
+        return board_eval(player, opponent, 0, is_player, color);
     }
     let mut mask: u64 = 0x8000000000000000;
 
@@ -414,6 +427,7 @@ fn alpha_beta(
                     player,
                     opponent,
                     false,
+                    color,
                     next_mobilitys,
                     depth - 1,
                     alpha,
@@ -430,6 +444,7 @@ fn alpha_beta(
                         next_player,
                         next_opponent,
                         false,
+                        color,
                         next_mobilitys,
                         depth - 1,
                         alp,
@@ -461,6 +476,7 @@ fn alpha_beta(
                     player,
                     opponent,
                     true,
+                    color,
                     next_mobilitys,
                     depth - 1,
                     alpha,
@@ -477,6 +493,7 @@ fn alpha_beta(
                         next_player,
                         next_opponent,
                         true,
+                        color,
                         next_mobilitys,
                         depth - 1,
                         alpha,
