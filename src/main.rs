@@ -7,8 +7,8 @@ random
 
 
 クライアント
-    cargo run -- -H "127.0.0.1" -p 3000 -n rusThello --nobook
-    cargo run -- -H "127.0.0.1" -p 3000 -n evalTest --nobook -e
+    cargo run -- -H "127.0.0.1" -p 3000 -n rusThello --nobook -e -t 6
+    cargo run -- -H "127.0.0.1" -p 3000 -n evalTest --nobook -e -t 6
     cargo run -- -H "127.0.0.1" -p 3000 -n random
     cargo run -- --verb -e
     cargo run -- --nobook -e
@@ -18,7 +18,7 @@ think_depth(default: 4) -t 7
 
 
 最強
-    cargo run --release -- -H "127.0.0.1" -p 3000 -n rusThello -s 23 -t 9
+    cargo run --release -- -H "127.0.0.1" -p 3000 -n rusThello -s 22 -t 9
 
 */
 

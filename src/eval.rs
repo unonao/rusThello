@@ -10,7 +10,7 @@ pub fn board_eval(me: u64, op: u64, count: i32, is_player: bool, color: i32) -> 
     match ARGS.name.as_str() {
         "rusThello" => second_eval(me, op) as f32,
         "evalTest" => eval_use_model(me, op, count, is_player, color),
-        _ => second_eval(me, op) as f32,
+        _ => eval_use_model(me, op, count, is_player, color),
     }
 }
 pub fn eval_use_model(me: u64, op: u64, count: i32, is_player: bool, color: i32) -> f32 {

@@ -460,7 +460,20 @@ impl Board {
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
                 //"evalTest" => get_by_model(player, opponent, mobilitys, count,color),
                 "evalTest" => {
-                    get_by_simple_alpha_beta(player, opponent, mobilitys, color, ARGS.think_depth)
+                    let pos = get_by_simple_alpha_beta(
+                        player,
+                        opponent,
+                        mobilitys,
+                        color,
+                        ARGS.think_depth,
+                    );
+                    let end = start.elapsed();
+                    println!(
+                        "alpha-beta: {}.{:03}秒経過",
+                        end.as_secs(),
+                        end.subsec_nanos() / 1_000_000
+                    );
+                    pos
                 }
                 "simple" => {
                     // invalid moveあり
@@ -536,7 +549,7 @@ impl Board {
         mobility |= sub_mobility_l(player, all_side, blank, 9); // 左上
         mobility |= sub_mobility_r(player, horizontal, blank, 1); // 右
         mobility |= sub_mobility_r(player, vertical, blank, 8); // 下
-        mobility |= sub_mobility_r(player, all_side, blank, 7); // 左下
+        mobility |= sub_mobility_r(player, all_side, blank, 7); // ���下
         mobility |= sub_mobility_r(player, all_side, blank, 9); // 右下
         mobility
     }
