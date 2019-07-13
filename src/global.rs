@@ -30,7 +30,7 @@ lazy_static! {
             .arg(Arg::from_usage("-E --endtrain [ENDTRAIN] 'end train'").default_value("13"))
             .arg(Arg::from_usage("-B --beta [BETA] 'train beta'").default_value("0.003"))
             .arg(Arg::from_usage("-I --iter [ITER] 'train iterate num'").default_value("100"))
-            .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("3"))
+            .arg(Arg::from_usage("-t --think [THINK] 'think depth'").default_value("4"))
             .args_from_usage("--verb 'verbose mode: level group'
                                 --debug 'debug mode: level group'
                                 --info 'info mode: level group'")

@@ -2,12 +2,12 @@
 
     think.rs: 思考ルーチン用ファイル
 */
-use rand::Rng;
-
+use crate::color::*;
 use crate::eval::*;
-
 use crate::global::*;
 use crate::play::*;
+use rand::Rng;
+use std::collections::BTreeMap;
 
 pub const FMAX: f32 = 100000000.0;
 
@@ -56,7 +56,7 @@ pub fn negascout(
                 -beta,
                 -alpha,
             );
-            return (-v, tmp);
+            return (-v, 0);
         }
     }
 
@@ -70,8 +70,16 @@ pub fn negascout(
     }
     //println!("vec len:{}", next_vec.len());
     /*
-        必要ならnext_vecのソート(moveOrdering)
+    必要ならnext_vecのソート(moveOrdering)
     */
+    /**/
+    if depth > 3 {
+        if is_player {
+            next_vec = move_ordering(next, pre, color, next_vec);
+        } else {
+            next_vec = move_ordering(next, pre, opposite_color(color), next_vec);
+        };
+    }
 
     let mut max: f32 = -FMAX;
     let mut result_pos: u64 = 0;
@@ -99,8 +107,8 @@ pub fn negascout(
     if alpha < v {
         alpha = v;
         max = v;
-        result_pos = better;
     }
+    result_pos = better;
 
     let mut flag = 0;
     for pos in next_vec {
@@ -163,6 +171,36 @@ pub fn negascout(
         };
     }
     return (max, result_pos);
+}
+
+fn move_ordering(player: u64, opponent: u64, color: i32, next_vec: Vec<u64>) -> Vec<u64> {
+    let mut max = -FMAX;
+    let mut max_count = 0;
+    let mut count = 0;
+    let mut v = Vec::new();
+    for next in next_vec {
+        v.push(next);
+        let (next_player, next_opponent) = flip_board(player, opponent, next);
+        let next_mobilitys = mobility_ps(next_opponent, next_player);
+        let val = alpha_beta(
+            next_player,
+            next_opponent,
+            false,
+            color,
+            next_mobilitys,
+            2,
+            -FMAX,
+            FMAX,
+        );
+        if max < val {
+            max = val;
+            max_count = count;
+        }
+        count += 1;
+    }
+
+    v.swap(0, max_count);
+    v
 }
 
 pub fn get_by_random(mobilitys: u64) -> u64 {
@@ -361,7 +399,13 @@ fn model_alpha_beta(
     }
 }
 
-pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64, color: i32) -> u64 {
+pub fn get_by_simple_alpha_beta(
+    player: u64,
+    opponent: u64,
+    mobilitys: u64,
+    color: i32,
+    depth: i32,
+) -> u64 {
     if mobilitys == 0 {
         return 0;
     } else {
@@ -380,7 +424,7 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64, colo
                     false,
                     color,
                     next_mobilitys,
-                    ARGS.think_depth - 1,
+                    depth - 1,
                     -FMAX,
                     FMAX,
                 );
@@ -392,7 +436,7 @@ pub fn get_by_simple_alpha_beta(player: u64, opponent: u64, mobilitys: u64, colo
             }
             mask = mask >> 1;
         }
-        println!("val:{}", best);
+        //println!("val:{}", best);
         return next;
     }
 }
@@ -545,7 +589,7 @@ pub fn get_by_simple_minimax(player: u64, opponent: u64, mobilitys: u64) -> u64 
 }
 
 fn minimax(player: u64, opponent: u64, is_player: bool, mobilitys: u64, depth: i32) -> i32 {
-    /* 葉の場合、評価値を返す */
+    /* 葉の場合、評価値を������ */
     if depth <= 0 {
         return board_eval(player, opponent, 0, is_player);
     }

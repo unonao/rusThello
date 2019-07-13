@@ -451,13 +451,17 @@ impl Board {
             }
         }
 
+        let start = Instant::now();
+
         if count > ARGS.solve_start || ARGS.random {
             // random ならno_solveになる
             return match ARGS.name.as_str() {
                 "random" => get_by_random(mobilitys),
                 "first" => get_by_first(mobilitys), // 先頭のものを取得
                 //"evalTest" => get_by_model(player, opponent, mobilitys, count,color),
-                "evalTest" => get_by_simple_alpha_beta(player, opponent, mobilitys, color),
+                "evalTest" => {
+                    get_by_simple_alpha_beta(player, opponent, mobilitys, color, ARGS.think_depth)
+                }
                 "simple" => {
                     // invalid moveあり
                     let (val, pos) = negascout(
@@ -471,20 +475,39 @@ impl Board {
                         -FMAX,
                         FMAX,
                     );
-                    //println!("val:{}", val);
+                    let end = start.elapsed();
+                    println!(
+                        "negascout: {}.{:03}秒経過",
+                        end.as_secs(),
+                        end.subsec_nanos() / 1_000_000
+                    );
                     pos
                 }
-                "rusThello" => get_by_simple_alpha_beta(player, opponent, mobilitys, color), // simple_minimax
+                "rusThello" => {
+                    let pos = get_by_simple_alpha_beta(
+                        player,
+                        opponent,
+                        mobilitys,
+                        color,
+                        ARGS.think_depth,
+                    );
+                    let end = start.elapsed();
+                    println!(
+                        "alpha-beta: {}.{:03}秒経過",
+                        end.as_secs(),
+                        end.subsec_nanos() / 1_000_000
+                    );
+                    pos
+                }
 
-                _ => get_by_simple_alpha_beta(player, opponent, mobilitys, color),
+                _ => get_by_simple_alpha_beta(player, opponent, mobilitys, color, ARGS.think_depth),
             };
         } else {
-            let start = Instant::now();
             let next = solve(player, opponent, count);
             let end = start.elapsed();
             if count == ARGS.solve_start {
                 println!(
-                    "count:{}  {}.{:03}秒経過しました。",
+                    "count:{}  {}.{:03}秒",
                     count,
                     end.as_secs(),
                     end.subsec_nanos() / 1_000_000

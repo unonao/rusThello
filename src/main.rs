@@ -7,7 +7,7 @@ random
 
 
 クライアント
-    cargo run -- -H "127.0.0.1" -p 3000 -n rusThello
+    cargo run -- -H "127.0.0.1" -p 3000 -n rusThello --nobook
     cargo run -- -H "127.0.0.1" -p 3000 -n evalTest --nobook -e
     cargo run -- -H "127.0.0.1" -p 3000 -n random
     cargo run -- --verb -e
@@ -18,7 +18,7 @@ think_depth(default: 4) -t 7
 
 
 最強
-    cargo run --release -- -H "127.0.0.1" -p 3000 -n rusThello -s 23 -t 7
+    cargo run --release -- -H "127.0.0.1" -p 3000 -n rusThello -s 23 -t 9
 
 */
 
@@ -82,7 +82,7 @@ fn my_move(
     let move_send = format!("MOVE {}\n", move_to_string(&pmove));
 
     if ARGS.level.as_str() == "verb" {
-        print_board(&board);
+        //print_board(&board);
         println!("my move: {}", move_send);
     }
     let count = match pmove {
