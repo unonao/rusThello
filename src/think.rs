@@ -1,7 +1,3 @@
-/*
-
-    think.rs: 思考ルーチン用ファイル
-*/
 use crate::color::*;
 use crate::eval::*;
 use crate::global::*;

@@ -468,11 +468,13 @@ impl Board {
                         ARGS.think_depth,
                     );
                     let end = start.elapsed();
+                    /*
                     println!(
                         "alpha-beta: {}.{:03}秒経過",
                         end.as_secs(),
                         end.subsec_nanos() / 1_000_000
                     );
+                    */
                     pos
                 }
                 "simple" => {
@@ -489,11 +491,12 @@ impl Board {
                         FMAX,
                     );
                     let end = start.elapsed();
+                    /*
                     println!(
                         "negascout: {}.{:03}秒経過",
                         end.as_secs(),
                         end.subsec_nanos() / 1_000_000
-                    );
+                    );*/
                     pos
                 }
                 "rusThello" => {
@@ -503,13 +506,13 @@ impl Board {
                         mobilitys,
                         color,
                         ARGS.think_depth,
-                    );
-                    let end = start.elapsed();
-                    println!(
-                        "alpha-beta: {}.{:03}秒経過",
-                        end.as_secs(),
-                        end.subsec_nanos() / 1_000_000
-                    );
+                    ); /*
+                       let end = start.elapsed();
+                       println!(
+                           "alpha-beta: {}.{:03}秒経過",
+                           end.as_secs(),
+                           end.subsec_nanos() / 1_000_000
+                       );*/
                     pos
                 }
 
